@@ -18,7 +18,7 @@ services:
 
   back:
     environment:
-      - WHEELS_DIR=/app/build
+      - WHEELS_DIR=/app/builds
       - LOGS_DIR=/app/logs
     restart: always
     build:
