@@ -20,3 +20,7 @@ def wheels_list() -> list[dict[str, str]]:
 def read_wheels(request: Request):
     wheels = wheels_list()
     return templates.TemplateResponse("wheels.html", {"request": request, "wheels": wheels})
+
+@app.post("/build")
+def build_wheel(request: Request):
+    return {""}
