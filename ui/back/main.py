@@ -21,6 +21,12 @@ def read_wheels(request: Request):
     wheels = wheels_list()
     return templates.TemplateResponse("wheels.html", {"request": request, "wheels": wheels})
 
-@app.post("/build")
+
+@app.get("/api/builds")
+def build_wheel(request: Request):
+    return {""}
+
+
+@app.post("/api/builds")
 def build_wheel(request: Request):
     return {""}
