@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  proxy:
+    image: nginx:1.23.2
+    restart: always
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ~/builds:/www/media
+
+  front:
+    restart: always
+    build:
+      context: ./ui/front
+    ports:
+      - "80:80"
+
+  back:
+    environment:
+      - WHEELS_DIR=/app/build
+      - LOGS_DIR=/app/logs
+    restart: always
+    build:
+      context: ./ui/back
+    ports:
+      - "8000:8000"
+    volumes:
+      - ~/logs:/app/logs
+      - ~/builds:/app/builds
