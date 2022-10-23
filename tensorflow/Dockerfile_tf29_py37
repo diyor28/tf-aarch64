@@ -1,10 +1,10 @@
 FROM python:3.7.15 as tf-build
 RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y install build-essential openjdk-11-jdk zip unzip wget
-RUN wget https://github.com/bazelbuild/bazel/releases/download/4.2.1/bazel-4.2.1-dist.zip
-RUN mkdir bazel-4.2.1mkdir bazel-4.2.1
-RUN unzip -d ./bazel-4.2.1 bazel-4.2.1-dist.zip
-WORKDIR /bazel-4.2.1
+RUN wget https://github.com/bazelbuild/bazel/releases/download/5.0.0/bazel-5.0.0-dist.zip
+RUN mkdir bazel-5.0.0
+RUN unzip -d ./bazel-5.0.0 bazel-5.0.0-dist.zip
+WORKDIR /bazel-5.0.0
 RUN env EXTRA_BAZEL_ARGS="--host_javabase=@local_jdk//:jdk" bash ./compile.sh
 RUN cp output/bazel /usr/local/bin
 
@@ -14,7 +14,7 @@ RUN apt-get -y install git
 
 RUN git clone https://github.com/tensorflow/tensorflow
 WORKDIR /tensorflow
-RUN git checkout r2.7
+RUN git checkout r2.9
 
 ENV PYTHONUNBUFFERED=1
 RUN pip install -U pip six 'numpy<1.19.0' wheel setuptools mock 'future>=0.17.1'

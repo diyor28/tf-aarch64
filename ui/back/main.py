@@ -1,11 +1,20 @@
 import os
+import subprocess
 
 from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel
+
+from store import Session, Build
 
 app = FastAPI()
 WHEELS_DIR = os.getenv("WHEELS_DIR")
 templates = Jinja2Templates(directory="templates")
+
+
+class BuildBody(BaseModel):
+    python: str
+    tensorflow: str
 
 
 def wheels_list() -> list[dict[str, str]]:
@@ -23,10 +32,16 @@ def read_wheels(request: Request):
 
 
 @app.get("/api/builds")
-def build_wheel(request: Request):
-    return {""}
+def get_builds():
+    session = Session()
+    return {"builds": [{"id": b.id, "python": b.python, "tensorflow": b.tensorflow} for b in session.query(Build).all()]}
 
 
 @app.post("/api/builds")
-def build_wheel(request: Request):
+def start_build(request: Request, conf: BuildBody):
+    subprocess.run(["docker", "build", ""])
+    session = Session()
+    build = Build(python=conf.python, tensorflow=conf.tensorflow)
+    session.add(build)
+    session.commit()
     return {""}
