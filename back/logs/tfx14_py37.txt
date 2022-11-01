@@ -1,0 +1,165 @@
+#1 [internal] load build definition from Dockerfile_tfx14_py37
+#1 sha256:557ffbfc1e83956e191f9aa8674153e2ac7d1c304a4075d69d1bc898de627055
+#1 DONE 0.0s
+
+#1 [internal] load build definition from Dockerfile_tfx14_py37
+#1 sha256:557ffbfc1e83956e191f9aa8674153e2ac7d1c304a4075d69d1bc898de627055
+#1 transferring dockerfile: 48B done
+#1 DONE 0.0s
+
+#2 [internal] load .dockerignore
+#2 sha256:d2e39ccd1aa210f4cdc734a7d5fb1bd9c697271450df11a3e0950acece2d688f
+#2 transferring context: 2B 0.0s done
+#2 DONE 0.1s
+
+#3 [internal] load metadata for docker.io/library/python:3.7.15
+#3 sha256:c02e6f837ac72842b55fed26b54a3731d5f3a61aca44eae54c8f66719ab42138
+#3 DONE 1.0s
+
+#4 [tfx-build  1/15] FROM docker.io/library/python:3.7.15@sha256:53e59319730a41a52e8b3c43bd114131c91ebc8689dcece363b796cb4e623cc1
+#4 sha256:7d855e5f6ed1e55541b3a032a316cccef68481ff3f1bd876d660afac4cf52684
+#4 CACHED
+
+#6 [tfx-build  3/15] RUN DEBIAN_FRONTEND=noninteractive apt-get -y install build-essential openjdk-11-jdk zip unzip wget
+#6 sha256:03804620e67f7ad01fc8127b8db77587704a9318b74e835229fb9004f2143e0b
+#6 CACHED
+
+#13 [tfx-build 10/15] RUN apt-get -y install git
+#13 sha256:50342cd8a2631ea4eed7133796f63b5ce0fb0d11139b0854596bf58c71822a64
+#13 CACHED
+
+#11 [tfx-build  8/15] RUN env EXTRA_BAZEL_ARGS="--host_javabase=@local_jdk//:jdk" bash ./compile.sh
+#11 sha256:754f5802c910db65094b72a3b947fdc91592fe17c60372355b9068a086e9f8e3
+#11 CACHED
+
+#14 [tfx-build 11/15] WORKDIR /tfx
+#14 sha256:db6dd9e6d234c9084f4c0a8125f96c00880d629915dd0291a151cb7f58e9842c
+#14 CACHED
+
+#5 [tfx-build  2/15] RUN apt-get update
+#5 sha256:9c4b9359d26ca57fb020dcad04b97d06b77b59f97d4242787b7d93f824dbf26c
+#5 CACHED
+
+#15 [tfx-build 12/15] RUN git clone https://github.com/tensorflow/data-validation.git
+#15 sha256:413c8e392e912503fe530a5db2ba4087ab891495bc205cb75f5726cd57fe3a07
+#15 CACHED
+
+#10 [tfx-build  7/15] WORKDIR /bazel-4.2.1
+#10 sha256:9ffd1cc1a3231e66808786dad6bd77212efe988f2be3f4c980de843c07fb5ff2
+#10 CACHED
+
+#12 [tfx-build  9/15] RUN cp output/bazel /usr/local/bin
+#12 sha256:3e45dc7f22bde0d5e379595d5d6b8d7c51b856758279d4f79fe8cdc9599e2f46
+#12 CACHED
+
+#8 [tfx-build  5/15] RUN mkdir bazel-4.2.1
+#8 sha256:3e7c6c2a3209d72f4d876392715c5ba14c85bd18441856ff0bc9eb70c81a0735
+#8 CACHED
+
+#16 [tfx-build 13/15] WORKDIR /tfx/data-validation
+#16 sha256:fe5284a7eb551aff100a50a40b11006a9ee994b54c5bdc2aefb397bf55a5a72b
+#16 CACHED
+
+#9 [tfx-build  6/15] RUN unzip -d ./bazel-4.2.1 bazel-4.2.1-dist.zip
+#9 sha256:9c28084e021aec2c60cb145c7b3cdeb8af2e67bbc8739940eefa8034576abc4c
+#9 CACHED
+
+#7 [tfx-build  4/15] RUN wget https://github.com/bazelbuild/bazel/releases/download/4.2.1/bazel-4.2.1-dist.zip
+#7 sha256:fdea15e63477f3b8c706b18fc9794b45f7a10a8eee6c5e1b2236162baea48fe4
+#7 CACHED
+
+#17 [tfx-build 14/15] RUN git checkout r1.4.0
+#17 sha256:289355bb6f62b6d961fc86b175248b24b38f2d487980e0933ab7c31935436710
+#17 CACHED
+
+#18 [tfx-build 15/15] RUN python setup.py bdist_wheel
+#18 sha256:41f28bdd33ec05bedb059dc3888b6ba9fe3bd6c6ba02dab7939cf364380ac030
+#18 0.693 running bdist_wheel
+#18 0.699 running build
+#18 0.699 running bazel_build
+#18 0.706 Extracting Bazel installation...
+#18 1.650 Starting local Bazel server and connecting to it...
+#18 2.622 Loading: 
+#18 2.625 Loading: 0 packages loaded
+#18 3.637 Loading: 0 packages loaded
+#18 4.638 Loading: 0 packages loaded
+#18 5.640 Loading: 0 packages loaded
+#18 6.644 Loading: 0 packages loaded
+#18 7.646 Loading: 0 packages loaded
+#18 8.656 Loading: 0 packages loaded
+#18 9.649 Loading: 0 packages loaded
+#18 10.72 Loading: 0 packages loaded
+#18 11.96 Loading: 0 packages loaded
+#18 13.38 Loading: 0 packages loaded
+#18 15.01 Loading: 0 packages loaded
+#18 16.89 Loading: 0 packages loaded
+#18 19.06 Loading: 0 packages loaded
+#18 21.54 Loading: 0 packages loaded
+#18 24.40 Loading: 0 packages loaded
+#18 27.69 Loading: 0 packages loaded
+#18 31.47 Loading: 0 packages loaded
+#18 33.85 WARNING: Download from https://mirror.bazel.build/github.com/tensorflow/tensorflow/archive/5d80e1e8e6ee999be7db39461e0e79c90403a2e4.tar.gz failed: class com.google.devtools.build.lib.bazel.repository.downloader.UnrecoverableHttpException GET returned 404 Not Found
+#18 34.99 Analyzing: target //tensorflow_data_validation:move_generated_files (1 packages loaded, 0 targets configured)
+#18 40.02 Analyzing: target //tensorflow_data_validation:move_generated_files (7 packages loaded, 9 targets configured)
+#18 41.56 DEBUG: Rule 'com_github_tensorflow_metadata' indicated that a canonical reproducible form can be obtained by modifying arguments shallow_since = "1635276468 -0700"
+#18 41.56 DEBUG: Repository com_github_tensorflow_metadata instantiated at:
+#18 41.56   /tfx/data-validation/WORKSPACE:68:29: in <toplevel>
+#18 41.56   /tfx/data-validation/tensorflow_data_validation/workspace.bzl:20:19: in tf_data_validation_workspace
+#18 41.56 Repository rule git_repository defined at:
+#18 41.56   /root/.cache/bazel/_bazel_root/a4ec20451aecb8f055036fd643399caf/external/bazel_tools/tools/build_defs/repo/git.bzl:199:33: in <toplevel>
+#18 42.02 WARNING: Download from https://mirror.bazel.build/github.com/pybind/pybind11/archive/v2.3.0.tar.gz failed: class com.google.devtools.build.lib.bazel.repository.downloader.UnrecoverableHttpException GET returned 404 Not Found
+#18 42.10 INFO: Repository zlib instantiated at:
+#18 42.10   /tfx/data-validation/WORKSPACE:62:25: in <toplevel>
+#18 42.10   /root/.cache/bazel/_bazel_root/a4ec20451aecb8f055036fd643399caf/external/rules_proto/proto/repositories.bzl:23:21: in rules_proto_dependencies
+#18 42.10 Repository rule http_archive defined at:
+#18 42.10   /root/.cache/bazel/_bazel_root/a4ec20451aecb8f055036fd643399caf/external/bazel_tools/tools/build_defs/repo/http.bzl:336:31: in <toplevel>
+#18 42.12 WARNING: Download from https://zlib.net/zlib-1.2.11.tar.gz failed: class com.google.devtools.build.lib.bazel.repository.downloader.UnrecoverableHttpException GET returned 404 Not Found
+#18 42.13 ERROR: An error occurred during the fetch of repository 'zlib':
+#18 42.13    Traceback (most recent call last):
+#18 42.13 	File "/root/.cache/bazel/_bazel_root/a4ec20451aecb8f055036fd643399caf/external/bazel_tools/tools/build_defs/repo/http.bzl", line 111, column 45, in _http_archive_impl
+#18 42.13 		download_info = ctx.download_and_extract(
+#18 42.13 Error in download_and_extract: java.io.IOException: Error downloading [https://zlib.net/zlib-1.2.11.tar.gz] to /root/.cache/bazel/_bazel_root/a4ec20451aecb8f055036fd643399caf/external/zlib/temp10339132620503093536/zlib-1.2.11.tar.gz: GET returned 404 Not Found
+#18 42.13 ERROR: Error fetching repository: Traceback (most recent call last):
+#18 42.13 	File "/root/.cache/bazel/_bazel_root/a4ec20451aecb8f055036fd643399caf/external/bazel_tools/tools/build_defs/repo/http.bzl", line 111, column 45, in _http_archive_impl
+#18 42.13 		download_info = ctx.download_and_extract(
+#18 42.13 Error in download_and_extract: java.io.IOException: Error downloading [https://zlib.net/zlib-1.2.11.tar.gz] to /root/.cache/bazel/_bazel_root/a4ec20451aecb8f055036fd643399caf/external/zlib/temp10339132620503093536/zlib-1.2.11.tar.gz: GET returned 404 Not Found
+#18 42.19 ERROR: /root/.cache/bazel/_bazel_root/a4ec20451aecb8f055036fd643399caf/external/com_google_protobuf/BUILD:150:11: @com_google_protobuf//:protobuf depends on @zlib//:zlib in repository @zlib which failed to fetch. no such package '@zlib//': java.io.IOException: Error downloading [https://zlib.net/zlib-1.2.11.tar.gz] to /root/.cache/bazel/_bazel_root/a4ec20451aecb8f055036fd643399caf/external/zlib/temp10339132620503093536/zlib-1.2.11.tar.gz: GET returned 404 Not Found
+#18 42.21 ERROR: Analysis of target '//tensorflow_data_validation:move_generated_files' failed; build aborted: Analysis failed
+#18 42.23 INFO: Elapsed time: 41.496s
+#18 42.23 INFO: 0 processes.
+#18 42.23 FAILED: Build did NOT complete successfully (29 packages loaded, 238 targets configured)
+#18 42.23 ERROR: Build failed. Not running target
+#18 42.24 FAILED: Build did NOT complete successfully (29 packages loaded, 238 targets configured)
+#18 42.28 Traceback (most recent call last):
+#18 42.28   File "setup.py", line 220, in <module>
+#18 42.28     'bazel_build': _BazelBuildCommand,
+#18 42.28   File "/usr/local/lib/python3.7/site-packages/setuptools/__init__.py", line 153, in setup
+#18 42.28     return distutils.core.setup(**attrs)
+#18 42.28   File "/usr/local/lib/python3.7/distutils/core.py", line 148, in setup
+#18 42.28     dist.run_commands()
+#18 42.28   File "/usr/local/lib/python3.7/distutils/dist.py", line 966, in run_commands
+#18 42.28     self.run_command(cmd)
+#18 42.28   File "/usr/local/lib/python3.7/distutils/dist.py", line 985, in run_command
+#18 42.28     cmd_obj.run()
+#18 42.28   File "/usr/local/lib/python3.7/site-packages/wheel/bdist_wheel.py", line 299, in run
+#18 42.28     self.run_command('build')
+#18 42.28   File "/usr/local/lib/python3.7/distutils/cmd.py", line 313, in run_command
+#18 42.28     self.distribution.run_command(command)
+#18 42.28   File "/usr/local/lib/python3.7/distutils/dist.py", line 985, in run_command
+#18 42.28     cmd_obj.run()
+#18 42.28   File "/usr/local/lib/python3.7/distutils/command/build.py", line 135, in run
+#18 42.28     self.run_command(cmd_name)
+#18 42.28   File "/usr/local/lib/python3.7/distutils/cmd.py", line 313, in run_command
+#18 42.28     self.distribution.run_command(command)
+#18 42.28   File "/usr/local/lib/python3.7/distutils/dist.py", line 985, in run_command
+#18 42.28     cmd_obj.run()
+#18 42.28   File "setup.py", line 87, in run
+#18 42.28     env=os.environ.copy().update({'PYTHON_BIN_PATH': sys.executable}))
+#18 42.28   File "/usr/local/lib/python3.7/subprocess.py", line 363, in check_call
+#18 42.28     raise CalledProcessError(retcode, cmd)
+#18 42.28 subprocess.CalledProcessError: Command '['/usr/local/bin/bazel', 'run', '-c', 'opt', '//tensorflow_data_validation:move_generated_files']' returned non-zero exit status 1.
+#18 ERROR: executor failed running [/bin/sh -c python setup.py bdist_wheel]: exit code: 1
+------
+ > [tfx-build 15/15] RUN python setup.py bdist_wheel:
+------
+executor failed running [/bin/sh -c python setup.py bdist_wheel]: exit code: 1

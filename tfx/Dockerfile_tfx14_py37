@@ -1,0 +1,26 @@
+FROM python:3.7.15 as tfx-build
+RUN apt-get update
+RUN DEBIAN_FRONTEND=noninteractive apt-get -y install build-essential openjdk-11-jdk zip unzip wget
+RUN wget https://github.com/bazelbuild/bazel/releases/download/4.2.1/bazel-4.2.1-dist.zip
+RUN mkdir bazel-4.2.1
+RUN unzip -d ./bazel-4.2.1 bazel-4.2.1-dist.zip
+WORKDIR /bazel-4.2.1
+RUN env EXTRA_BAZEL_ARGS="--host_javabase=@local_jdk//:jdk" bash ./compile.sh
+RUN cp output/bazel /usr/local/bin
+
+RUN apt-get -y install git zlib
+
+WORKDIR /tfx
+RUN git clone https://github.com/tensorflow/data-validation.git
+WORKDIR /tfx/data-validation
+RUN git checkout r1.4.0
+RUN pip install numpy
+RUN python setup.py bdist_wheel
+
+
+FROM python:3.7.15 as tfx-install
+COPY --from=tfx-build /tfx/dist/*.whl wheels/
+RUN pip install /wheels/*.whl
+RUN python -c "import tensorflow_data_validation as tfdv; print('TFDV version:', tfdv.version.__version__)"
+
+CMD ["python"]

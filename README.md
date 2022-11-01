@@ -1,5 +1,5 @@
 ```shell
-
+docker build -t tensorflow:2.7 -f tensorflow/Dockerfile_tf27_py37 .
 ```
 
 ```shell

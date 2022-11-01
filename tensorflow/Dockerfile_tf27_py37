@@ -35,7 +35,8 @@ RUN ./bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_p
 FROM python:3.7.15 as tf-install
 COPY --from=tf-build /tmp/tensorflow_pkg/*.whl wheels/
 RUN pip install /wheels/tensorflow-*.whl
-RUN python -c "import tensorflow as tf;print(tf.reduce_sum(tf.random.normal([1000, 1000])))"
+RUN curl https://raw.githubusercontent.com/keras-team/keras-io/master/examples/vision/mnist_convnet.py > test.py
+RUN python test.py
 
 CMD ["python"]
 
