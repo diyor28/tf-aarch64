@@ -1,6 +1,8 @@
 .idea
-ui/back/venv
-ui/back/.idea
+back/venv
+back/data
+back/logs
+back/.idea
 
 __pycache__
 .DS_Store
