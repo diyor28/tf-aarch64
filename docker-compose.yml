@@ -14,7 +14,7 @@ services:
   front:
     restart: always
     build:
-      context: ./ui/front
+      context: ./front
 
   back:
     environment:
@@ -22,7 +22,7 @@ services:
       - LOGS_DIR=/app/logs
     restart: always
     build:
-      context: ./ui/back
+      context: ./back
     volumes:
       - ~/volumes/logs:/app/logs
       - ~/volumes/builds:/app/builds
