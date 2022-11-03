@@ -27,3 +27,4 @@ services:
     volumes:
       - ~/volumes/logs:/app/logs
       - ~/volumes/builds:/app/builds
+      - ~/volumes/data:/app/data
