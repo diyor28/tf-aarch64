@@ -20,7 +20,6 @@ class Build(Base):
     class Type:
         TENSORFLOW = 'tensorflow'
         TFX = 'tfx'
-        TFX_BSL = 'tfx-bsl'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     python = Column(String)
