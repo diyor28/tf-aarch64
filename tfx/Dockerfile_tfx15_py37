@@ -17,7 +17,8 @@ WORKDIR /tfx
 RUN git clone https://github.com/tensorflow/tfx-bsl.git
 WORKDIR /tfx/tfx-bsl
 RUN git checkout r1.5.0
-RUN echo 'http_archive(name="com_google_absl", urls=["https://github.com/abseil/abseil-cpp/archive/215105818dfde3174fe799600bb0f3cae233d0bf.zip"], sha256="b4e20d9e752a75c10636675691b1e9c2698e0764cb404987d0ffa77223041c19", strip_prefix="abseil-cpp-215105818dfde3174fe799600bb0f3cae233d0bf")' >> WORKSPACE
+RUN sed -i 's/e1d388e7e74803050423d035e4374131b9b57919/215105818dfde3174fe799600bb0f3cae233d0bf/g' WORKSPACE
+RUN sed -i 's/baebd1536bec56ae7d7c060c20c01af89ecba2c0b1bc8992b652520655395f94/b4e20d9e752a75c10636675691b1e9c2698e0764cb404987d0ffa77223041c19/g' WORKSPACE
 RUN python setup.py bdist_wheel
 RUN cp dist/*.whl /wheels
 
@@ -25,16 +26,14 @@ WORKDIR /tfx
 RUN git clone https://github.com/tensorflow/data-validation.git
 WORKDIR /tfx/data-validation
 RUN git checkout r1.5.0
-#replace commit id & hash
-RUN sed -i 's/e1d388e7e74803050423d035e4374131b9b57919/215105818dfde3174fe799600bb0f3cae233d0bf/g' WORKSPACE
-RUN sed -i 's/baebd1536bec56ae7d7c060c20c01af89ecba2c0b1bc8992b652520655395f94/b4e20d9e752a75c10636675691b1e9c2698e0764cb404987d0ffa77223041c19/g' WORKSPACE
+RUN echo 'http_archive(name="zlib", build_file="@com_google_protobuf//:third_party/zlib.BUILD", sha256="b3a24de97a8fdbc835b9833169501030b8977031bcb54b3b3ac13740f846ab30", strip_prefix="zlib-1.2.13", urls=["https://zlib.net/zlib-1.2.13.tar.gz"])' >> WORKSPACE
 RUN python setup.py bdist_wheel
 RUN cp dist/*.whl /wheels
 
 
 FROM python:3.7.15 as tfx-install
 COPY --from=tfx-build /wheels/*.whl wheels/
-RUN pip install /wheels/*.whl
-RUN python -c "import tensorflow_data_validation as tfdv; print('TFDV version:', tfdv.version.__version__)"
+#RUN pip install /wheels/*.whl
+#RUN python -c "import tensorflow_data_validation as tfdv; print('TFDV version:', tfdv.version.__version__)"
 
 CMD ["python"]
