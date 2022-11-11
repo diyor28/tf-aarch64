@@ -2,7 +2,6 @@ import {createRouter, createWebHistory, RouteRecordRaw} from 'vue-router'
 import Home from '../views/Home.vue'
 import Tensorflow from '../views/Tensorflow.vue'
 import Tfx from '../views/Tfx.vue'
-import TfxBsl from '../views/TfxBsl.vue'
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -19,11 +18,6 @@ const routes: Array<RouteRecordRaw> = [
                 path: '/tfx',
                 name: 'tfx',
                 component: Tfx
-            },
-            {
-                path: '/tfx-bsl',
-                name: 'tfx-bsl',
-                component: TfxBsl
             }
         ]
     }

@@ -3,14 +3,14 @@
     <div class="flex mt-4">
         <div>
             <label class="label">Python</label>
-            <version-select v-model="buildBody.python" :versions="['3.7', '3.8', '3.9', '3.10']"></version-select>
+            <version-select v-model="buildBody.python" :versions="['3.7', '3.8']"></version-select>
         </div>
         <div class="flex-auto ml-4">
             <label class="label">Tfx</label>
-            <version-select v-model="buildBody.package" :versions="['1.4', '1.5', '1.6', '1.7']"></version-select>
+            <version-select v-model="buildBody.package" :versions="['1.4', '1.5', '1.6', '1.7', '1.8', '1.9', '1.10']"></version-select>
         </div>
         <div>
-            <button class="btn" @click="buildsStore.create(buildBody)">Build</button>
+            <button class="btn btn-success" @click="buildsStore.create(buildBody)">Build</button>
         </div>
     </div>
 </template>

@@ -1,5 +1,5 @@
-import os
 import asyncio
+import os
 
 from fastapi import FastAPI, Request, WebSocket, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -66,9 +66,8 @@ async def handle_socket_messages(websocket: WebSocket):
     await websocket.accept()
     asyncio.create_task(send_log_updates(websocket))
     while True:
+        # TODO: figure out later
         data = await websocket.receive_json()
-        print(data)
-        # await websocket.send_text(f"Message text was: {data}")
 
 
 @app.get("/api/builds")
@@ -77,13 +76,14 @@ def get_builds(t: str = ''):
     query_list = session.query(Build)
     if t:
         query_list = query_list.filter(Build.type == t)
-    return [{"id": b.id, "python": b.python, "package": b.package, "filename": b.filename, "type": b.type} for b in query_list.all()]
+    return [{"id": b.id, "python": b.python, "package": b.package, "filename": b.filename, "status": b.status, "type": b.type} for b in query_list.all()]
 
 
 @app.post("/api/builds")
 async def start_build(conf: BuildBody):
     session = Session()
     build = Build(python=conf.python, package=conf.package, type=conf.type, filename=get_filename(conf.python, conf.package, conf.type))
+
     try:
         session.add(build)
         session.commit()
@@ -95,5 +95,44 @@ async def start_build(conf: BuildBody):
         "python": build.python,
         "package": build.package,
         "filename": build.filename,
+        "status": build.status,
         "type": conf.type
+    }
+
+
+@app.post("/api/builds/{filename}/cancel")
+async def cancel_build(filename: str):
+    session = Session()
+    build = session.query(Build).filter(Build.filename == filename).first()
+    if not build:
+        raise HTTPException(status_code=404, detail=f"No build for filename {filename} found")
+
+    build.status = Build.Status.FAILED
+    session.add(build)
+    session.commit()
+    return {"ok": True}
+
+
+@app.put("/api/builds/{filename}")
+async def rebuild(conf: BuildBody, filename: str):
+    session = Session()
+    build = session.query(Build).filter(Build.filename == filename).first()
+    if not build:
+        build = Build(python=conf.python, package=conf.package, type=conf.type, filename=filename)
+    else:
+        build.status = build.Status.PENDING
+
+    try:
+        session.add(build)
+        session.commit()
+    except IntegrityError:
+        raise HTTPException(status_code=400, detail="This python and tensorflow combination already exists")
+
+    return {
+        "id": build.id,
+        "python": build.python,
+        "package": build.package,
+        "filename": build.filename,
+        "status": build.status,
+        "type": build.type
     }

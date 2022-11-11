@@ -33,7 +33,7 @@ RUN cp dist/*.whl /wheels
 
 FROM python:3.7.15 as tfx-install
 COPY --from=tfx-build /wheels/*.whl wheels/
-#RUN pip install /wheels/*.whl
-#RUN python -c "import tensorflow_data_validation as tfdv; print('TFDV version:', tfdv.version.__version__)"
+RUN pip install /wheels/*.whl
+RUN python -c "import tensorflow_data_validation as tfdv; print('TFDV version:', tfdv.version.__version__)"
 
 CMD ["python"]

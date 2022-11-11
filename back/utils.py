@@ -14,15 +14,17 @@ logs_q = queue.Queue(maxsize=0)
 
 def create_builders():
     lock = threading.Lock()
-    builders: list[Builder] = []
+    builders: list[BuildScheduler] = []
     for i in range(5):
-        b = Builder(lock)
+        b = BuildScheduler(lock)
         b.start()
         builders.append(b)
     return builders
 
 
 class BaseThread(threading.Thread):
+    _stopped: bool
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._stopped = False
@@ -48,13 +50,43 @@ readers: list[Reader] = []
 
 
 class Builder(BaseThread):
+    status: str
+
+    def __init__(self, commands: list[list[str]], log_file: TextIO, lock: threading.Lock, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.lock = lock
+        self.commands = commands
+        self.log_file = log_file
+        self.status = Build.Status.PENDING
+
+    def build(self):
+        for cmd in self.commands:
+            p = subprocess.Popen(cmd, stdout=self.log_file, stderr=self.log_file)
+            while True:
+                if self._stopped:
+                    self.status = Build.Status.CANCELLED
+                    p.terminate()
+                    break
+                try:
+                    p.wait(timeout=5)
+                    assert p.returncode == 0
+                    break
+                except subprocess.TimeoutExpired:
+                    pass
+
+    def run(self) -> None:
+        self.status = Build.Status.BUILDING
+        try:
+            self.build()
+        except Exception:
+            self.status = Build.Status.FAILED
+        self.status = Build.Status.COMPLETED
+
+
+class BuildScheduler(BaseThread):
     def __init__(self, lock: threading.Lock):
         super().__init__()
         self.lock = lock
-        self._stopped = False
-
-    def stop(self):
-        self._stopped = True
 
     def run(self) -> None:
         while True:
@@ -81,29 +113,27 @@ class Builder(BaseThread):
             reader.start()
             readers.append(reader)
 
-            try:
-                if build.type == Build.Type.TENSORFLOW:
-                    p = subprocess.Popen(["docker", "build", "-t", f"tensorflow_py{py_combined}:{build.package}", "-f", f"../tensorflow/Dockerfile_tf{pck_combined}_py{py_combined}", "."], stdout=log_file, stderr=log_file)
-                    p.wait()
-                    assert p.returncode == 0
+            if build.type == Build.Type.TENSORFLOW:
+                build_cmd = ["docker", "build", "-t", f"tensorflow_py{py_combined}:{build.package}", "-f", f"../tensorflow/Dockerfile_tf{pck_combined}_py{py_combined}", "../tensorflow/"]
+                cp_cmd = ["docker", "run", "-v", "~/volumes/builds:/builds", f"tensorflow_py{py_combined}:{build.package}", "cp", "-a", "/wheels/.", "/builds"]
+            else:
+                build_cmd = ["docker", "build", "-t", f"tfx_py{py_combined}:{build.package}", "-f", f"../tfx/Dockerfile_tfx{pck_combined}_py{py_combined}", "../tfx/"]
+                cp_cmd = ["docker", "run", "-v", "~/volumes/builds:/builds", f"tfx_py{py_combined}:{build.package}", "cp", "-a", "/wheels/.", "/builds"]
 
-                    p = subprocess.Popen(["docker", "run", "-v", "~/volumes/test:/builds", f"tensorflow_py{py_combined}:{build.package}", "cp", "-a", "/wheels/.", "/builds"], stdout=log_file, stderr=log_file)
-                    p.wait()
-                    assert p.returncode == 0
+            builder = Builder(commands=[build_cmd, cp_cmd], log_file=log_file, lock=self.lock)
+            while True:
+                self.lock.acquire()
+                build = session.query(Build).get(build.id)
+                if build.status == Build.Status.CANCELLED:
+                    builder.stop()
+                    break
+                self.lock.release()
+                if builder.is_alive():
+                    time.sleep(5)
+                else:
+                    break
 
-                if build.type == Build.Type.TFX:
-                    p = subprocess.Popen(["docker", "build", "-t", f"tfx_py{py_combined}:{build.package}", "-f", f"../tfx/Dockerfile_tfx{pck_combined}_py{py_combined}", "."], stdout=log_file, stderr=log_file)
-                    p.wait()
-                    assert p.returncode == 0
-
-                    p = subprocess.Popen(["docker", "run", "-v", "~/volumes/test:/builds", f"tfx_py{py_combined}:{build.package}", "cp", "-a", "/wheels/.", "/builds"], stdout=log_file, stderr=log_file)
-                    p.wait()
-                    assert p.returncode == 0
-
-                build.status = Build.Status.COMPLETED
-            except AssertionError:
-                build.status = Build.Status.FAILED
-
+            build.status = builder.status
             session.add(build)
             session.commit()
 
@@ -121,8 +151,6 @@ def get_filename(py_version: str, pck_version: str, pck_type: str):
     py_combined = ''.join(py_version.split('.'))
     if pck_type == Build.Type.TFX:
         return f"tfx{tf_combined}_py{py_combined}"
-    if pck_type == Build.Type.TFX_BSL:
-        return f"tfxbsl{tf_combined}_py{py_combined}"
     return f"tf{tf_combined}_py{py_combined}"
 
 

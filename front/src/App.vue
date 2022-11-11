@@ -9,6 +9,12 @@
 </template>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono&display=swap');
+
+body {
+    font-family: "system-ui", serif;
+}
+
 ul {
     padding-left: 0;
 }
@@ -48,6 +54,11 @@ button {
     -webkit-border-image: none;
 }
 
+.btn-success {
+    background: rgb(47,164,78);
+    color: rgb(255,255,255);
+}
+
 .label {
     display: block;
     font-size: .875rem;
@@ -72,6 +83,14 @@ button {
 
 .justify-center {
     justify-content: center;
+}
+
+.space-x-2 {
+    column-gap: 0.5rem;
+}
+
+.space-x-4 {
+    column-gap: 1rem;
 }
 
 .ml-2 {

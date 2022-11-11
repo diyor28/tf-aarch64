@@ -1,10 +1,10 @@
-FROM python:3.7.15 as tf-build
+FROM python:3.8.15 as tf-build
 RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y install build-essential openjdk-11-jdk zip unzip wget
-RUN wget https://github.com/bazelbuild/bazel/releases/download/5.0.0/bazel-5.0.0-dist.zip
-RUN mkdir bazel-5.0.0
-RUN unzip -d ./bazel-5.0.0 bazel-5.0.0-dist.zip
-WORKDIR /bazel-5.0.0
+RUN wget https://github.com/bazelbuild/bazel/releases/download/5.3.2/bazel-5.3.2-dist.zip
+RUN mkdir bazel-5.3.2
+RUN unzip -d ./bazel-5.3.2 bazel-5.3.2-dist.zip
+WORKDIR /bazel-5.3.2
 RUN env EXTRA_BAZEL_ARGS="--host_javabase=@local_jdk//:jdk" bash ./compile.sh
 RUN cp output/bazel /usr/local/bin
 
@@ -14,7 +14,7 @@ RUN apt-get -y install git
 
 RUN git clone https://github.com/tensorflow/tensorflow
 WORKDIR /tensorflow
-RUN git checkout r2.10
+RUN git checkout r2.9
 
 ENV PYTHONUNBUFFERED=1
 RUN pip install -U pip six 'numpy<1.19.0' wheel setuptools mock 'future>=0.17.1'
@@ -32,10 +32,11 @@ RUN ./configure
 RUN bazel build --config=opt -c opt //tensorflow/tools/pip_package:build_pip_package
 RUN ./bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_pkg
 
-FROM python:3.7.15 as tf-install
+FROM python:3.8.15 as tf-install
 COPY --from=tf-build /tmp/tensorflow_pkg/*.whl wheels/
 RUN pip install /wheels/tensorflow-*.whl
 RUN curl https://raw.githubusercontent.com/keras-team/keras-io/master/examples/vision/mnist_convnet.py > test.py
 RUN python test.py
 
 CMD ["python"]
+

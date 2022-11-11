@@ -1,14 +1,11 @@
 <template>
     <div>
-        <ul class="flex">
+        <ul class="nav flex">
             <li class="tab">
-                <router-link to="/">Tensorflow</router-link>
+                <router-link exact-active-class="active" to="/">Tensorflow</router-link>
             </li>
             <li class="tab">
-                <router-link to="/tfx">Tfx</router-link>
-            </li>
-            <li class="tab">
-                <router-link to="/tfx-bsl">Tfx-bsl</router-link>
+                <router-link exact-active-class="active" to="/tfx">Tfx</router-link>
             </li>
         </ul>
         <router-view></router-view>
@@ -31,8 +28,20 @@ const logs = reactive({});
     padding: 10px;
 }
 
+.nav {
+    background: rgb(36, 41, 47);
+}
+
 .tab {
     padding: 1rem;
 }
 
+.tab a {
+    color: rgb(190, 191, 193);
+    font-family: "system-ui", serif;
+}
+
+.tab a:hover, .tab a.active {
+    color: rgb(255, 255, 255);
+}
 </style>

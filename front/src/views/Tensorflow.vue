@@ -5,14 +5,14 @@
         <div class="flex mt-4">
             <div>
                 <label class="label">Python</label>
-                <version-select v-model="buildBody.python" :versions="['3.7', '3.8', '3.9', '3.10']"></version-select>
+                <version-select v-model="buildBody.python" :versions="['3.7', '3.8']"></version-select>
             </div>
             <div class="flex-auto ml-4">
                 <label class="label">Tensorflow</label>
-                <version-select v-model="buildBody.package" :versions="['2.7', '2.8', '2.9', '2.10']"></version-select>
+                <version-select v-model="buildBody.package" :versions="['2.7', '2.8', '2.9']"></version-select>
             </div>
             <div>
-                <button class="btn" @click="build">Build</button>
+                <button class="btn btn-success" @click="build">Build</button>
             </div>
         </div>
     </div>
@@ -43,5 +43,4 @@ async function build() {
 </script>
 
 <style scoped>
-
 </style>

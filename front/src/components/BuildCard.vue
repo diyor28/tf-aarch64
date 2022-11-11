@@ -3,43 +3,81 @@
         <div class="flex align-center justify-center">
             <div class="flex-auto">
                 <div style="display: inline-flex">
-                    <python style="width: 20px; height: 20px"></python>
+                    <python class="icon-md"></python>
                     <div class="ml-2">
                         {{ props.build.python }}
                     </div>
                 </div>
                 <div class="ml-4" style="display: inline-flex">
-                    <tensorflow style="width: 20px; height: 20px"></tensorflow>
+                    <tensorflow class="icon-md"></tensorflow>
                     <div class="ml-2">
                         {{ props.build.package }}
                     </div>
                 </div>
+                <div class="ml-4" style="display: inline-flex">
+                    <x v-if="props.build.status === 'failed'" class="icon-md" style="color: rgb(255,29,29)"></x>
+                    <check v-else-if="props.build.status === 'completed'" class="icon-md" style="color: rgb(44,255,29)"></check>
+                    <refresh v-else class="spin-animation icon-md"></refresh>
+                </div>
             </div>
             <div>
-                <button class="btn">
-                    Rebuild
-                    <refresh style="height: 16px; width: 16px"></refresh>
-                </button>
+                <div class="flex space-x-4">
+                    <button class="btn flex align-center items-center space-x-2" @click="rebuild">
+                        Rebuild
+                        <refresh class="icon-sm"></refresh>
+                    </button>
+                    <button class="btn flex align-center items-center space-x-2" @click="cancel">
+                        Cancel
+                        <stop-icon class="icon-sm"></stop-icon>
+                    </button>
+                </div>
             </div>
         </div>
         <div v-if="entries.length" class="build-log mt-4">
-            <p v-for="[line_n, log] in entries">
-                <span>{{ line_n }}</span><span class="ml-4">{{ log }}</span>
-            </p>
+            <div v-for="[line_n, log] in entries" class="log-line">
+                <span class="line-number">{{ line_n }}</span><span class="ml-4">{{ log }}</span>
+            </div>
         </div>
     </div>
 </template>
 
 <script lang="ts" setup>
+import {computed} from "vue";
+import {useBuildsStore} from "@/stores/builds";
+
+// noinspection
+import X from "@/components/Icons/X.vue";
+import StopIcon from "@/components/Icons/Stop.vue";
+import Check from "@/components/Icons/Check.vue";
 import Python from "@/components/Icons/Python.vue";
 import Refresh from "@/components/Icons/Refresh.vue";
 import Tensorflow from "@/components/Icons/Tensorflow.vue";
-import {computed} from "vue";
 
 const props = defineProps<{ build: any, logs: Record<number, string> }>()
 const entries = computed(() => {
     return Object.entries(props.logs || {})
 });
+const buildsStore = useBuildsStore();
+
+async function cancel() {
+    try {
+        await buildsStore.cancel(props.build.filename);
+    } catch (e){
+        if (e.status === 400) {
+            alert(e.body.detail);
+        }
+    }
+}
+
+async function rebuild() {
+    try {
+        await buildsStore.put(props.build.filename, props.build);
+    } catch (e){
+        if (e.status === 400) {
+            alert(e.body.detail);
+        }
+    }
+}
 
 </script>
 
@@ -48,7 +86,47 @@ const entries = computed(() => {
 .build-log {
     border: solid 1px #efefef;
     border-radius: 8px;
-    padding: 8px;
+    padding: 4px;
     background: #efefef;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.log-line {
+    display: flex;
+    padding: 8px;
+    font-size: 14px;
+    font-family: 'Space Mono', monospace;
+}
+
+.log-line:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.line-number {
+    color: rgba(0, 0, 0, 0.7);
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.spin-animation {
+    animation: spin 5s linear infinite;
+}
+
+.icon-md {
+    height: 20px;
+    width: 20px;
+}
+
+.icon-sm {
+    height: 16px;
+    width: 16px;
 }
 </style>

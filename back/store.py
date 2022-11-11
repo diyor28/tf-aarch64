@@ -15,6 +15,7 @@ class Build(Base):
         PENDING = 'pending'
         BUILDING = 'building'
         FAILED = 'failed'
+        CANCELLED = 'cancelled'
         COMPLETED = 'completed'
 
     class Type:
