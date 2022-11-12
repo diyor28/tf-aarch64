@@ -15,7 +15,7 @@ logs_q = queue.Queue(maxsize=0)
 def create_builders():
     lock = threading.Lock()
     builders: list[BuildScheduler] = []
-    for i in range(2):
+    for i in range(6):
         b = BuildScheduler(lock)
         b.start()
         builders.append(b)
