@@ -14,7 +14,7 @@ export const useBuildsStore = defineStore("builds", {
     },
     actions: {
 		async fetch() {
-			const response = await fetch(process.env.VUE_APP_API_URL + '/api/builds', {
+			const response = await fetch(process.env.VUE_APP_API_URL + '/builds', {
 				method: 'get',
 				headers: {'Content-Type': 'application/json'}
 			});
@@ -22,7 +22,7 @@ export const useBuildsStore = defineStore("builds", {
 		},
 
 		async create(data: any) {
-			const response = await fetch(process.env.VUE_APP_API_URL + '/api/builds', {
+			const response = await fetch(process.env.VUE_APP_API_URL + '/builds', {
 				method: 'post',
 				headers: {'Content-Type': 'application/json'},
 				body: JSON.stringify(data)
@@ -36,7 +36,7 @@ export const useBuildsStore = defineStore("builds", {
 		},
 
 		async put(filename: string, data: any) {
-			const response = await fetch(process.env.VUE_APP_API_URL + '/api/builds/' + filename, {
+			const response = await fetch(process.env.VUE_APP_API_URL + '/builds/' + filename, {
 				method: 'put',
 				headers: {'Content-Type': 'application/json'},
 				body: JSON.stringify(data)
@@ -55,7 +55,7 @@ export const useBuildsStore = defineStore("builds", {
 		},
 
 		async cancel(filename: string) {
-			const response = await fetch(process.env.VUE_APP_API_URL + `/api/builds/${filename}/cancel`, {
+			const response = await fetch(process.env.VUE_APP_API_URL + `/builds/${filename}/cancel`, {
 				method: 'post',
 				headers: {'Content-Type': 'application/json'},
 			});
