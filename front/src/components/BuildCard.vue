@@ -15,7 +15,8 @@
                     </div>
                 </div>
                 <div class="ml-4" style="display: inline-flex">
-                    <x v-if="props.build.status === 'failed'" class="icon-md" style="color: rgb(255,29,29)"></x>
+                    <x v-if="['failed', 'cancelled'].includes(props.build.status)" class="icon-md"
+                       style="color: rgb(255,29,29)"></x>
                     <check v-else-if="props.build.status === 'completed'" class="icon-md" style="color: rgb(44,255,29)"></check>
                     <refresh v-else class="spin-animation icon-md"></refresh>
                 </div>

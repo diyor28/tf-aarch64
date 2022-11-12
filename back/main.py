@@ -53,7 +53,6 @@ def read_wheels(request: Request):
 
 async def send_log_updates(websocket: WebSocket):
     async for record in get_log_updates():
-        print("sending log updates")
         await websocket.send_json({"event": "log_updates", "data": record})
 
 

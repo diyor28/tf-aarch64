@@ -15,7 +15,7 @@ logs_q = queue.Queue(maxsize=0)
 def create_builders():
     lock = threading.Lock()
     builders: list[BuildScheduler] = []
-    for i in range(5):
+    for i in range(2):
         b = BuildScheduler(lock)
         b.start()
         builders.append(b)
@@ -52,9 +52,8 @@ readers: list[Reader] = []
 class Builder(BaseThread):
     status: str
 
-    def __init__(self, commands: list[list[str]], log_file: TextIO, lock: threading.Lock, *args, **kwargs):
+    def __init__(self, commands: list[list[str]], log_file: TextIO, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.lock = lock
         self.commands = commands
         self.log_file = log_file
         self.status = Build.Status.PENDING
@@ -66,21 +65,22 @@ class Builder(BaseThread):
                 if self._stopped:
                     self.status = Build.Status.CANCELLED
                     p.terminate()
-                    break
+                    return
+
                 try:
                     p.wait(timeout=5)
                     assert p.returncode == 0
-                    break
+                    return
                 except subprocess.TimeoutExpired:
                     pass
+        self.status = Build.Status.COMPLETED
 
     def run(self) -> None:
         self.status = Build.Status.BUILDING
         try:
             self.build()
-        except Exception:
+        except AssertionError:
             self.status = Build.Status.FAILED
-        self.status = Build.Status.COMPLETED
 
 
 class BuildScheduler(BaseThread):
@@ -120,18 +120,17 @@ class BuildScheduler(BaseThread):
                 build_cmd = ["docker", "build", "-t", f"tfx_py{py_combined}:{build.package}", "-f", f"../tfx/Dockerfile_tfx{pck_combined}_py{py_combined}", "../tfx/"]
                 cp_cmd = ["docker", "run", "-v", "~/volumes/builds:/builds", f"tfx_py{py_combined}:{build.package}", "cp", "-a", "/wheels/.", "/builds"]
 
-            builder = Builder(commands=[build_cmd, cp_cmd], log_file=log_file, lock=self.lock)
-            while True:
+            builder = Builder(commands=[build_cmd, cp_cmd], log_file=log_file)
+            builder.start()
+            while builder.is_alive():
                 self.lock.acquire()
                 build = session.query(Build).get(build.id)
                 if build.status == Build.Status.CANCELLED:
                     builder.stop()
+                    self.lock.release()
                     break
                 self.lock.release()
-                if builder.is_alive():
-                    time.sleep(5)
-                else:
-                    break
+                time.sleep(5)
 
             build.status = builder.status
             session.add(build)
