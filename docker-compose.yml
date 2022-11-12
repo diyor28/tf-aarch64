@@ -25,6 +25,7 @@ services:
     build:
       context: ./back
     volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
       - ~/volumes/logs:/app/logs
       - ~/volumes/builds:/app/builds
       - ~/volumes/data:/app/data
