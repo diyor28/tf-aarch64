@@ -60,7 +60,7 @@ async def get_logs():
     pass
 
 
-@app.websocket("/ws")
+@app.websocket("/api/ws")
 async def handle_socket_messages(websocket: WebSocket):
     await websocket.accept()
     asyncio.create_task(send_log_updates(websocket))
