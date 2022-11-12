@@ -133,6 +133,7 @@ class BuildScheduler(BaseThread):
                 time.sleep(5)
 
             build.status = builder.status
+            reader.stop()
             session.add(build)
             session.commit()
 
