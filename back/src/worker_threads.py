@@ -7,8 +7,9 @@ import threading
 import time
 from typing import TextIO
 
-from conf import WHEELS_DIR
-from store import Session, Build
+from .build_model import Session, Build
+from .conf import BUILDER_THREADS
+from .utils import flat2dotted
 
 logs_q = queue.Queue(maxsize=0)
 
@@ -16,7 +17,7 @@ logs_q = queue.Queue(maxsize=0)
 def create_builders():
     lock = threading.Lock()
     builders: list[BuildScheduler] = []
-    for i in range(6):
+    for i in range(BUILDER_THREADS):
         b = BuildScheduler(lock)
         b.start()
         builders.append(b)
@@ -116,7 +117,7 @@ class BuildScheduler(BaseThread):
 
             commands = []
 
-            for bazel_df in os.listdir("../bazel"):
+            for bazel_df in os.listdir("../../bazel"):
                 bazel_ver = re.findall(r"bazel(\d\d)", bazel_df)[0]
                 commands.append(["docker", "build", "-t", f"bazel:{flat2dotted(bazel_ver)}", "-f", f"../bazel/{bazel_df}", "../bazel/"])
 
@@ -145,30 +146,6 @@ class BuildScheduler(BaseThread):
             reader.stop()
             session.add(build)
             session.commit()
-
-
-def wheels_list() -> list[dict[str, str]]:
-    wheel_files = [f for f in os.listdir(WHEELS_DIR) if os.path.isfile(os.path.join(WHEELS_DIR, f))]
-    res = []
-    for file in wheel_files:
-        res.append({"name": file, "url": f"/builds/{file}"})
-    return res
-
-
-def flat2dotted(version: str):
-    return '.'.join(version.split(''))
-
-
-def dotted2flat(version: str):
-    return ''.join(version.split('.'))
-
-
-def get_filename(py_version: str, pck_version: str, pck_type: str):
-    tf_combined = dotted2flat(pck_version)
-    py_combined = dotted2flat(py_version)
-    if pck_type == Build.Type.TFX:
-        return f"tfx{tf_combined}_py{py_combined}"
-    return f"tf{tf_combined}_py{py_combined}"
 
 
 def follow(file: TextIO):

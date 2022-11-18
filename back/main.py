@@ -9,8 +9,9 @@ from fastapi.templating import Jinja2Templates
 from pydantic.main import BaseModel
 from sqlalchemy.exc import IntegrityError
 
-from store import Session, Build
-from utils import wheels_list, get_log_updates, create_builders, readers, flat2dotted
+from src.build_model import Session, Build
+from src.utils import flat2dotted, wheels_list
+from src.worker_threads import get_log_updates, create_builders, readers
 
 
 class BuildBody(BaseModel):
