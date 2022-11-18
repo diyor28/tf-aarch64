@@ -13,7 +13,7 @@ services:
     volumes:
       - /etc/basic_auth/.htpasswd:/etc/basic_auth/.htpasswd
       - ~/volumes/builds:/www/media/builds
-      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
 
   front:
     restart: always
