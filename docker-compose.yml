@@ -4,6 +4,9 @@ services:
   proxy:
     image: nginx:1.23.2-alpine
     restart: always
+    depends_on:
+      - front
+      - back
     ports:
       - "80:80"
       - "443:443"

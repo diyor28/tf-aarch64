@@ -1,7 +1,7 @@
-from sqlalchemy import Column, Integer, DateTime, String, func, create_engine
+from sqlalchemy import Column, DateTime, String, func, create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-from back.utils import get_filename
+from utils import get_filename
 
 Base = declarative_base()
 
