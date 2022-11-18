@@ -1,0 +1,9 @@
+FROM debian:buster
+RUN apt-get update
+RUN DEBIAN_FRONTEND=noninteractive apt-get -y install build-essential openjdk-11-jdk zip unzip wget
+RUN wget https://github.com/bazelbuild/bazel/releases/download/3.7.2/bazel-3.7.2-dist.zip
+RUN mkdir bazel-3.7.2
+RUN unzip -d ./bazel-3.7.2 bazel-3.7.2-dist.zip
+WORKDIR /bazel-3.7.2
+RUN env EXTRA_BAZEL_ARGS="--host_javabase=@local_jdk//:jdk" bash ./compile.sh
+RUN cp output/bazel /usr/local/bin

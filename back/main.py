@@ -1,5 +1,7 @@
-import asyncio
 import os
+import re
+import glob
+import asyncio
 
 from fastapi import FastAPI, Request, WebSocket, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,7 +10,7 @@ from pydantic.main import BaseModel
 from sqlalchemy.exc import IntegrityError
 
 from store import Session, Build
-from utils import wheels_list, get_log_updates, get_filename, create_builders, readers
+from utils import wheels_list, get_log_updates, create_builders, readers, flat2dotted
 
 
 class BuildBody(BaseModel):
@@ -69,6 +71,26 @@ async def handle_socket_messages(websocket: WebSocket):
         data = await websocket.receive_json()
 
 
+@app.get("/api/versions")
+def get_versions():
+    # tensorflow dockerfiles
+    tf_dfs = glob.glob("../tensorflow/Dockerfile")
+    # tfdv+tfx-bsl dockerfiles
+    tfdv_dfs = glob.glob("../tfx/Dockerfile")
+    tf_versions = []
+    tfdv_versions = []
+    for df in tf_dfs:
+        # parse Dockerfile_tf27_py37 -> ("27", "37")
+        tf_ver, py_ver = re.findall(r"tf(\d\d)_py(\d\d)", df)[0]
+        tf_versions.append({"tensorflow": flat2dotted(tf_ver), "python": flat2dotted(py_ver)})
+
+    for df in tfdv_dfs:
+        tfdv_ver, py_ver = re.findall(r"tfx(\d\d)_py(\d\d)", df)[0]
+        tfdv_versions.append({"tensorflow": flat2dotted(tfdv_ver), "python": flat2dotted(py_ver)})
+
+    return {"tensorflow": tf_versions, "tfdv": tfdv_versions}
+
+
 @app.get("/api/builds")
 def get_builds(t: str = ''):
     session = Session()
@@ -81,7 +103,7 @@ def get_builds(t: str = ''):
 @app.post("/api/builds")
 async def start_build(conf: BuildBody):
     session = Session()
-    build = Build(python=conf.python, package=conf.package, type=conf.type, filename=get_filename(conf.python, conf.package, conf.type))
+    build = Build(python=conf.python, package=conf.package, type=conf.type)
 
     try:
         session.add(build)
@@ -93,7 +115,6 @@ async def start_build(conf: BuildBody):
         "id": build.id,
         "python": build.python,
         "package": build.package,
-        "filename": build.filename,
         "status": build.status,
         "type": conf.type
     }
@@ -102,7 +123,7 @@ async def start_build(conf: BuildBody):
 @app.post("/api/builds/{filename}/cancel")
 async def cancel_build(filename: str):
     session = Session()
-    build = session.query(Build).filter(Build.filename == filename).first()
+    build = session.query(Build).get(filename)
     if not build:
         raise HTTPException(status_code=404, detail=f"No build for filename {filename} found")
 
@@ -115,9 +136,9 @@ async def cancel_build(filename: str):
 @app.put("/api/builds/{filename}")
 async def rebuild(conf: BuildBody, filename: str):
     session = Session()
-    build = session.query(Build).filter(Build.filename == filename).first()
+    build = session.query(Build).get(filename)
     if not build:
-        build = Build(python=conf.python, package=conf.package, type=conf.type, filename=filename)
+        build = Build(python=conf.python, package=conf.package, type=conf.type)
     else:
         build.status = build.Status.PENDING
 
@@ -131,7 +152,6 @@ async def rebuild(conf: BuildBody, filename: str):
         "id": build.id,
         "python": build.python,
         "package": build.package,
-        "filename": build.filename,
         "status": build.status,
         "type": build.type
     }

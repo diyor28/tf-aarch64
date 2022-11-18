@@ -1,42 +1,27 @@
 FROM python:3.7.15 as tf-build
-RUN apt-get update
-RUN DEBIAN_FRONTEND=noninteractive apt-get -y install build-essential openjdk-11-jdk zip unzip wget
-RUN wget https://github.com/bazelbuild/bazel/releases/download/3.7.2/bazel-3.7.2-dist.zip
-RUN mkdir bazel-3.7.2
-RUN unzip -d ./bazel-3.7.2 bazel-3.7.2-dist.zip
-WORKDIR /bazel-3.7.2
-RUN env EXTRA_BAZEL_ARGS="--host_javabase=@local_jdk//:jdk" bash ./compile.sh
-RUN cp output/bazel /usr/local/bin
-
-WORKDIR /
-
-RUN apt-get -y install git
-
-RUN git clone https://github.com/tensorflow/tensorflow
-WORKDIR /tensorflow
-RUN git checkout r2.7
-
-ENV PYTHONUNBUFFERED=1
-RUN pip install -U pip six 'numpy<1.19.0' wheel setuptools mock 'future>=0.17.1'
-RUN pip install -U keras_applications --no-deps
-RUN pip install -U keras_preprocessing --no-deps
-ENV TF_NEED_CUDA 0
-ENV TF_NEED_TENSORRT 0
-ENV PYTHON_BIN_PATH "/usr/local/bin/python"
-ENV USE_DEFAULT_PYTHON_LIB_PATH 1
-ENV TF_NEED_ROCM 0
-ENV CC_OPT_FLAGS "-Wno-sign-compare"
-ENV TF_DOWNLOAD_CLANG 0
-ENV TF_SET_ANDROID_WORKSPACE 0
-RUN ./configure
-RUN bazel build --config=opt -c opt //tensorflow/tools/pip_package:build_pip_package
-RUN ./bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_pkg
+COPY --from=bazel:3.7 /usr/local/bin/bazel /usr/local/bin
+#RUN apt-get -y install git
+#RUN git clone https://github.com/tensorflow/tensorflow
+#WORKDIR /tensorflow
+#RUN git checkout r2.7
+#ENV TF_NEED_CUDA=0 \
+#TF_NEED_TENSORRT=0 \
+#PYTHON_BIN_PATH="/usr/local/bin/python" \
+#USE_DEFAULT_PYTHON_LIB_PATH=1 \
+#TF_NEED_ROCM=0 \
+#CC_OPT_FLAGS="-Wno-sign-compare" \
+#TF_DOWNLOAD_CLANG=0 \
+#TF_SET_ANDROID_WORKSPACE=0
+#RUN ./configure
+#RUN bazel build --config=opt -c opt //tensorflow/tools/pip_package:build_pip_package
+#RUN ./bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_pkg
+RUN touch /tmp/tensorflow_pkg/tensorflow-test.whl
 
 FROM python:3.7.15 as tf-install
 COPY --from=tf-build /tmp/tensorflow_pkg/*.whl wheels/
-RUN pip install /wheels/tensorflow-*.whl
-RUN curl https://raw.githubusercontent.com/keras-team/keras-io/master/examples/vision/mnist_convnet.py > test.py
-RUN python test.py
+#RUN pip install /wheels/tensorflow-*.whl
+#RUN curl https://raw.githubusercontent.com/keras-team/keras-io/master/examples/vision/mnist_convnet.py > test.py
+#RUN python test.py
 
 CMD ["python"]
 

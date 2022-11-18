@@ -1,6 +1,7 @@
 import asyncio
 import os
 import queue
+import re
 import subprocess
 import threading
 import time
@@ -113,14 +114,22 @@ class BuildScheduler(BaseThread):
             reader.start()
             readers.append(reader)
 
-            if build.type == Build.Type.TENSORFLOW:
-                build_cmd = ["docker", "build", "-t", f"tensorflow_py{py_combined}:{build.package}", "-f", f"../tensorflow/Dockerfile_tf{pck_combined}_py{py_combined}", "../tensorflow/"]
-                cp_cmd = ["docker", "run", "-v", "~/volumes/builds:/builds", f"tensorflow_py{py_combined}:{build.package}", "cp", "-a", "/wheels/.", "/builds"]
-            else:
-                build_cmd = ["docker", "build", "-t", f"tfx_py{py_combined}:{build.package}", "-f", f"../tfx/Dockerfile_tfx{pck_combined}_py{py_combined}", "../tfx/"]
-                cp_cmd = ["docker", "run", "-v", "~/volumes/builds:/builds", f"tfx_py{py_combined}:{build.package}", "cp", "-a", "/wheels/.", "/builds"]
+            commands = []
 
-            builder = Builder(commands=[build_cmd, cp_cmd], log_file=log_file)
+            for bazel_df in os.listdir("../bazel"):
+                bazel_ver = re.findall(r"bazel(\d\d)", bazel_df)[0]
+                commands.append(["docker", "build", "-t", f"bazel:{flat2dotted(bazel_ver)}", "-f", f"../bazel/{bazel_df}", "../bazel/"])
+
+            if build.type == Build.Type.TENSORFLOW:
+                commands.append(["docker", "build", "-t", f"tensorflow_py{py_combined}:{build.package}", "-f", f"../tensorflow/Dockerfile_tf{pck_combined}_py{py_combined}", "../tensorflow/"])
+                # command to copy produced wheels to host
+                commands.append(["docker", "run", "-v", "~/volumes/builds:/builds", f"tensorflow_py{py_combined}:{build.package}", "cp", "-a", "/wheels/.", "/builds"])
+            else:
+                commands.append(["docker", "build", "-t", f"tfx_py{py_combined}:{build.package}", "-f", f"../tfx/Dockerfile_tfx{pck_combined}_py{py_combined}", "../tfx/"])
+                # command to copy produced wheels to host
+                commands.append(["docker", "run", "-v", "~/volumes/builds:/builds", f"tfx_py{py_combined}:{build.package}", "cp", "-a", "/wheels/.", "/builds"])
+
+            builder = Builder(commands=commands, log_file=log_file)
             builder.start()
             while builder.is_alive():
                 self.lock.acquire()
@@ -146,9 +155,17 @@ def wheels_list() -> list[dict[str, str]]:
     return res
 
 
+def flat2dotted(version: str):
+    return '.'.join(version.split(''))
+
+
+def dotted2flat(version: str):
+    return ''.join(version.split('.'))
+
+
 def get_filename(py_version: str, pck_version: str, pck_type: str):
-    tf_combined = ''.join(pck_version.split('.'))
-    py_combined = ''.join(py_version.split('.'))
+    tf_combined = dotted2flat(pck_version)
+    py_combined = dotted2flat(py_version)
     if pck_type == Build.Type.TFX:
         return f"tfx{tf_combined}_py{py_combined}"
     return f"tf{tf_combined}_py{py_combined}"
