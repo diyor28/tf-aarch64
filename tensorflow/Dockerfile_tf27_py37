@@ -24,4 +24,3 @@ COPY --from=tf-build /tmp/tensorflow_pkg/*.whl wheels/
 #RUN python test.py
 
 CMD ["python"]
-
