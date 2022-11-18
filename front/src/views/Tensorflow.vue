@@ -1,7 +1,7 @@
 <template>
     <div>
         <build-card v-for="build in buildsStore.tf" :build="build"
-                    :logs="logsStore.getLogs(build.filename)"></build-card>
+                    :logs="logsStore.getLogs(build.id)"></build-card>
         <div class="flex mt-4">
             <div>
                 <label class="label">Python</label>

@@ -98,7 +98,7 @@ def get_builds(t: str = ''):
     query_list = session.query(Build)
     if t:
         query_list = query_list.filter(Build.type == t)
-    return [{"id": b.id, "python": b.python, "package": b.package, "filename": b.filename, "status": b.status, "type": b.type} for b in query_list.all()]
+    return [{"id": b.id, "python": b.python, "package": b.package, "status": b.status, "type": b.type} for b in query_list.all()]
 
 
 @app.post("/api/builds")

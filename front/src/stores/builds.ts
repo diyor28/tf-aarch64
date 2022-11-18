@@ -43,7 +43,7 @@ export const useBuildsStore = defineStore("builds", {
 			});
 			const build = await response.json();
 			if (response.status >= 200 && response.status < 300) {
-				const idx = this.builds.findIndex(el => el.filename === build.filename);
+				const idx = this.builds.findIndex(el => el.id === build.id);
 				if (idx === - 1) {
 					this.builds.push(build);
 				} else {

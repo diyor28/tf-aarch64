@@ -62,7 +62,7 @@ const buildsStore = useBuildsStore();
 
 async function cancel() {
     try {
-        await buildsStore.cancel(props.build.filename);
+        await buildsStore.cancel(props.build.id);
     } catch (e){
         if (e.status === 400) {
             alert(e.body.detail);
@@ -72,7 +72,7 @@ async function cancel() {
 
 async function rebuild() {
     try {
-        await buildsStore.put(props.build.filename, props.build);
+        await buildsStore.put(props.build.id, props.build);
     } catch (e){
         if (e.status === 400) {
             alert(e.body.detail);

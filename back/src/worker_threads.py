@@ -109,9 +109,9 @@ class BuildScheduler(BaseThread):
 
             pck_combined = ''.join(build.package.split('.'))
             py_combined = ''.join(build.python.split('.'))
-            log_file = open(f"./logs/{build.filename}.txt", "w+")
+            log_file = open(f"./logs/{build.id}.txt", "w+")
 
-            reader = Reader(build.filename, log_file)
+            reader = Reader(build.id, log_file)
             reader.start()
             readers.append(reader)
 
