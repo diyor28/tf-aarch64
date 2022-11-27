@@ -6,8 +6,8 @@ import time
 from typing import TextIO
 
 from .build_model import Session, Build
-from .conf import BUILDER_THREADS
-from .utils import flat2dotted
+from .conf import BUILDER_THREADS, TF_DF_REGEX, TFX_DF_REGEX
+from .utils import flat2dotted, scan_dockerfiles
 
 log_files = {}
 
@@ -22,14 +22,17 @@ def create_builders():
     return builders
 
 
-def get_logs(pk: str):
+def get_logs(pk: str, n_lines: int = 15):
     logs = []
-    file = log_files.get(pk, open(f"./logs/{pk}.txt", "r"))
+    filename = f"./logs/{pk}.txt"
+    if not os.path.exists(filename):
+        return []
+    file = log_files.get(pk, open(filename, "r"))
     if not file:
         return []
     file.seek(0, 0)
     lines = file.readlines()
-    for idx, line in enumerate(lines[-5:]):
+    for idx, line in enumerate(lines[-1 * n_lines:]):
         logs.append({"line_number": len(lines) + 5 + idx, "line": line.strip()})
     return logs
 
@@ -95,14 +98,19 @@ class BuildScheduler(BaseThread):
                 self.lock.release()
                 time.sleep(5)
                 continue
-            print(f"Found a job! Python: {build.python}, Package: {build.type}, Version: {build.package}")
+            print(f"Job found. Python: {build.python}, Package: {build.type}, Version: {build.package}")
             build.status = Build.Status.BUILDING
             session.add(build)
             session.commit()
             self.lock.release()
 
-            pck_combined = ''.join(build.package.split('.')[:-1])
+            py_ver = build.python
+            pkg_ver_split = build.package.split(".")
+            pkg_minor_ver = pkg_ver_split[-1]
+            pkg_major_ver = ".".join(pkg_ver_split[:-1])
+            pkg_ver = ".".join(pkg_ver_split[:-1]) if pkg_minor_ver == "x" else build.package
             py_combined = ''.join(build.python.split('.'))
+            build_args = ["--build-arg", f"PYTHON_VERSION={py_ver}", f"MINOR_VERSION={'' if pkg_minor_ver == 'x' else pkg_minor_ver}"]
             log_file = open(f"./logs/{build.id}.txt", "w+")
 
             log_files[build.id] = log_file
@@ -114,14 +122,21 @@ class BuildScheduler(BaseThread):
                 commands.append(["docker", "build", "-t", f"bazel:{flat2dotted(bazel_ver)}", "-f", f"../bazel/{bazel_df}", "../bazel/"])
 
             if build.type == Build.Type.TENSORFLOW:
-                commands.append(["docker", "build", "-t", f"tensorflow_py{py_combined}:{build.package}", "-f", f"../tensorflow/Dockerfile_tf{pck_combined}_py{py_combined}", "../tensorflow/"])
+                dfs_map = scan_dockerfiles("../tensorflow/Dockerfile*", TF_DF_REGEX)
+                image_name = f"tensorflow_py{py_combined}:{pkg_ver}"
+                docker_file = dfs_map[pkg_major_ver]["df"]
+                commands.append(["docker", "build", "-t", image_name, "-f", docker_file, *build_args, "../tensorflow/"])
                 # command to copy produced wheels to host
-                commands.append(["docker", "run", "-v", "~/volumes/builds:/builds", f"tensorflow_py{py_combined}:{build.package}", "cp", "-a", "/wheels/.", "/builds"])
+                commands.append(["docker", "run", "-v", "~/volumes/builds:/builds", image_name, "cp", "-a", "/wheels/.", "/builds"])
             else:
-                commands.append(["docker", "build", "-t", f"tfx_py{py_combined}:{build.package}", "-f", f"../tfx/Dockerfile_tfx{pck_combined}_py{py_combined}", "../tfx/"])
+                dfs_map = scan_dockerfiles("../tfx/Dockerfile*", TFX_DF_REGEX)
+                image_name = f"tfx_py{py_combined}:{pkg_ver}"
+                docker_file = dfs_map[pkg_major_ver]["df"]
+                commands.append(["docker", "build", "-t", image_name, "-f", docker_file, *build_args, "../tfx/"])
                 # command to copy produced wheels to host
-                commands.append(["docker", "run", "-v", "~/volumes/builds:/builds", f"tfx_py{py_combined}:{build.package}", "cp", "-a", "/wheels/.", "/builds"])
+                commands.append(["docker", "run", "-v", "~/volumes/builds:/builds", image_name, "cp", "-a", "/wheels/.", "/builds"])
 
+            print("Starting builder")
             builder = Builder(commands=commands, log_file=log_file)
             builder.start()
             while builder.is_alive():

@@ -30,14 +30,10 @@ const buildBody = ref({python: '', package: '', type: 'tensorflow'});
 const buildsStore = useBuildsStore();
 const versionsStore = useVersionsStore();
 
-const pyVersions = computed(() => {
-    const versions = versionsStore.tensorflow.map(el => el.python);
-    return sortVersions(Array.from(new Set(versions)));
-});
+const pyVersions = ['3.7', '3.8', '3.9', '3.10', '3.11'];
 
 const tfVersions = computed(() => {
-    const versions = versionsStore.tensorflow.map(el => el.package);
-    return sortVersions(Array.from(new Set(versions)));
+    return sortVersions(Array.from(new Set(versionsStore.tensorflow)));
 });
 
 async function build() {

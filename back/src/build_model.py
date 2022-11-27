@@ -10,10 +10,10 @@ eng = create_engine(db_uri)
 Session = sessionmaker(bind=eng)
 
 
-def get_filename(py_version: str, pck_version: str, pck_type: str):
-    tf_combined = dotted2flat(pck_version)
+def get_filename(py_version: str, pkg_version: str, pkg_type: str):
+    tf_combined = dotted2flat(pkg_version)
     py_combined = dotted2flat(py_version)
-    if pck_type == Build.Type.TFX:
+    if pkg_type == Build.Type.TFX:
         return f"tfx{tf_combined}_py{py_combined}"
     return f"tf{tf_combined}_py{py_combined}"
 

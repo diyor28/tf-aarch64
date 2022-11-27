@@ -1,6 +1,4 @@
 import os
-import re
-import glob
 
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,9 +6,10 @@ from fastapi.templating import Jinja2Templates
 from pydantic.main import BaseModel
 from sqlalchemy.exc import IntegrityError
 
-from src.build_model import Session, Build, get_filename
-from src.utils import flat2dotted, wheels_list
+from src.build_model import Session, Build
+from src.utils import wheels_list, list_versions
 from src.worker_threads import create_builders, get_logs
+from src.conf import TF_DF_REGEX, TFX_DF_REGEX
 
 
 class BuildBody(BaseModel):
@@ -25,7 +24,7 @@ if not os.path.exists('./logs'):
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-builders = create_builders()
+builders = []
 
 app.add_middleware(
     CORSMiddleware,
@@ -34,6 +33,12 @@ app.add_middleware(
     allow_headers=["*"],
     allow_credentials=True,
 )
+
+
+@app.on_event("startup")
+def on_startup():
+    builders.extend(create_builders())
+    print("Started worker threads")
 
 
 @app.on_event("shutdown")
@@ -51,23 +56,10 @@ def read_wheels(request: Request):
     return templates.TemplateResponse("wheels.html", {"request": request, "wheels": wheels})
 
 
-def extract_versions(path: str, exp: str):
-    df_files = glob.glob(path)
-    result = []
-
-    for df in df_files:
-        pkg_ver, minor_ver, py_ver = re.findall(exp, os.path.basename(df))[0]
-        dotted_pck_ver = flat2dotted(pkg_ver)
-        dotted_py_ver = flat2dotted(py_ver)
-        for ver in minor_ver.split(","):
-            result.append({"package": f"{dotted_pck_ver}.{ver}", "python": dotted_py_ver})
-    return result
-
-
 @app.get("/api/versions")
 def get_versions():
-    tf_versions = extract_versions("../tensorflow/Dockerfile*", r"tf(\d+)\((.+)\)_py(\d+)")
-    tfx_versions = extract_versions("../tfx/Dockerfile*", r"tfx(\d+)\((.+)\)_py(\d+)")
+    tf_versions = list_versions("../tensorflow/Dockerfile*", TF_DF_REGEX)
+    tfx_versions = list_versions("../tfx/Dockerfile*", TFX_DF_REGEX)
 
     return {"tensorflow": tf_versions, "tfx": tfx_versions}
 
@@ -100,7 +92,6 @@ async def start_build(conf: BuildBody):
         session.add(build)
         session.commit()
     except IntegrityError as e:
-        print(e)
         raise HTTPException(status_code=400, detail="This python and tensorflow combination already exists")
 
     return {
