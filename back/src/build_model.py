@@ -47,7 +47,9 @@ class Build(Base):
     update_at = Column(DateTime, onupdate=func.now())
 
     def __repr__(self):
-        return "<Build(python='%s', tensorflow='%s')>" % (
+        return "<Build(python='%s', package='%s', type='%s', status='%s')>" % (
             self.python,
-            self.tensorflow
+            self.package,
+            self.type,
+            self.status
         )

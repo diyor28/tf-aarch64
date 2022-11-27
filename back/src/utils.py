@@ -12,7 +12,7 @@ def wheels_list() -> list[dict[str, str]]:
 
 
 def flat2dotted(version: str):
-    return '.'.join(version.split(''))
+    return '.'.join([version[0], version[1:]])
 
 
 def dotted2flat(version: str):

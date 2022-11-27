@@ -34,9 +34,9 @@
                 </div>
             </div>
         </div>
-        <div v-if="entries.length" class="build-log mt-4">
-            <div v-for="[line_n, log] in entries" class="log-line">
-                <span class="line-number">{{ line_n }}</span><span class="ml-4">{{ log }}</span>
+        <div v-if="logs.length" class="build-log mt-4">
+            <div v-for="log in logs" class="log-line">
+                <span class="line-number">{{ log.line_number }}</span><span class="ml-4">{{ log.line }}</span>
             </div>
         </div>
     </div>
@@ -54,10 +54,8 @@ import Python from "@/components/Icons/Python.vue";
 import Refresh from "@/components/Icons/Refresh.vue";
 import Tensorflow from "@/components/Icons/Tensorflow.vue";
 
-const props = defineProps<{ build: any, logs: Record<number, string> }>()
-const entries = computed(() => {
-    return Object.entries(props.logs || {})
-});
+const props = defineProps<{ build: any}>();
+const logs = computed(() => props.build.logs);
 const buildsStore = useBuildsStore();
 
 async function cancel() {

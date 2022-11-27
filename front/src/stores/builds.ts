@@ -1,18 +1,22 @@
 import {defineStore} from "pinia";
 
 export interface Build {
-    id: number
-    python: string
-    package: string
-    type: string
-    filename: string
+	id: number
+	python: string
+	package: string
+	type: string
+	filename: string
+}
+
+export interface State {
+	builds: Build[]
 }
 
 export const useBuildsStore = defineStore("builds", {
-    state: (): { builds: Build[] } => {
-        return {builds: []};
-    },
-    actions: {
+	state: (): State => {
+		return {builds: []};
+	},
+	actions: {
 		async fetch() {
 			const response = await fetch(process.env.VUE_APP_API_URL + '/builds', {
 				method: 'get',
@@ -73,9 +77,6 @@ export const useBuildsStore = defineStore("builds", {
 		},
 		tfx: (state) => {
 			return state.builds.filter(el => el.type === 'tfx');
-		},
-		tfxbsl: (state) => {
-			return state.builds.filter(el => el.type === 'tfx-bsl');
-		},
+		}
     },
 });

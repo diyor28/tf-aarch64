@@ -1,17 +1,16 @@
 import os
 import re
 import glob
-import asyncio
 
-from fastapi import FastAPI, Request, WebSocket, HTTPException
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
 from pydantic.main import BaseModel
 from sqlalchemy.exc import IntegrityError
 
-from src.build_model import Session, Build
+from src.build_model import Session, Build, get_filename
 from src.utils import flat2dotted, wheels_list
-from src.worker_threads import get_log_updates, create_builders, readers
+from src.worker_threads import create_builders, get_logs
 
 
 class BuildBody(BaseModel):
@@ -41,11 +40,9 @@ app.add_middleware(
 def on_shutdown():
     for b in builders:
         b.stop()
-        b.join()
 
-    for r in readers:
-        r.stop()
-        r.join()
+    for b in builders:
+        b.join()
 
 
 @app.get("/wheels")
@@ -54,42 +51,25 @@ def read_wheels(request: Request):
     return templates.TemplateResponse("wheels.html", {"request": request, "wheels": wheels})
 
 
-async def send_log_updates(websocket: WebSocket):
-    async for record in get_log_updates():
-        await websocket.send_json({"event": "log_updates", "data": record})
+def extract_versions(path: str, exp: str):
+    df_files = glob.glob(path)
+    result = []
 
-
-async def get_logs():
-    pass
-
-
-@app.websocket("/api/ws")
-async def handle_socket_messages(websocket: WebSocket):
-    await websocket.accept()
-    asyncio.create_task(send_log_updates(websocket))
-    while True:
-        # TODO: figure out later
-        data = await websocket.receive_json()
+    for df in df_files:
+        pkg_ver, minor_ver, py_ver = re.findall(exp, os.path.basename(df))[0]
+        dotted_pck_ver = flat2dotted(pkg_ver)
+        dotted_py_ver = flat2dotted(py_ver)
+        for ver in minor_ver.split(","):
+            result.append({"package": f"{dotted_pck_ver}.{ver}", "python": dotted_py_ver})
+    return result
 
 
 @app.get("/api/versions")
 def get_versions():
-    # tensorflow dockerfiles
-    tf_dfs = glob.glob("../tensorflow/Dockerfile")
-    # tfdv+tfx-bsl dockerfiles
-    tfdv_dfs = glob.glob("../tfx/Dockerfile")
-    tf_versions = []
-    tfdv_versions = []
-    for df in tf_dfs:
-        # parse Dockerfile_tf27_py37 -> ("27", "37")
-        tf_ver, py_ver = re.findall(r"tf(\d\d)_py(\d\d)", df)[0]
-        tf_versions.append({"tensorflow": flat2dotted(tf_ver), "python": flat2dotted(py_ver)})
+    tf_versions = extract_versions("../tensorflow/Dockerfile*", r"tf(\d+)\((.+)\)_py(\d+)")
+    tfx_versions = extract_versions("../tfx/Dockerfile*", r"tfx(\d+)\((.+)\)_py(\d+)")
 
-    for df in tfdv_dfs:
-        tfdv_ver, py_ver = re.findall(r"tfx(\d\d)_py(\d\d)", df)[0]
-        tfdv_versions.append({"tensorflow": flat2dotted(tfdv_ver), "python": flat2dotted(py_ver)})
-
-    return {"tensorflow": tf_versions, "tfdv": tfdv_versions}
+    return {"tensorflow": tf_versions, "tfx": tfx_versions}
 
 
 @app.get("/api/builds")
@@ -98,7 +78,17 @@ def get_builds(t: str = ''):
     query_list = session.query(Build)
     if t:
         query_list = query_list.filter(Build.type == t)
-    return [{"id": b.id, "python": b.python, "package": b.package, "status": b.status, "type": b.type} for b in query_list.all()]
+    result = []
+    for b in query_list.all():
+        result.append({
+            "id": b.id,
+            "python": b.python,
+            "package": b.package,
+            "status": b.status,
+            "type": b.type,
+            "logs": get_logs(b.id)
+        })
+    return result
 
 
 @app.post("/api/builds")
@@ -109,7 +99,8 @@ async def start_build(conf: BuildBody):
     try:
         session.add(build)
         session.commit()
-    except IntegrityError:
+    except IntegrityError as e:
+        print(e)
         raise HTTPException(status_code=400, detail="This python and tensorflow combination already exists")
 
     return {
@@ -117,7 +108,8 @@ async def start_build(conf: BuildBody):
         "python": build.python,
         "package": build.package,
         "status": build.status,
-        "type": conf.type
+        "type": conf.type,
+        "logs": get_logs(build.id)
     }
 
 
@@ -128,7 +120,7 @@ async def cancel_build(filename: str):
     if not build:
         raise HTTPException(status_code=404, detail=f"No build for filename {filename} found")
 
-    build.status = Build.Status.FAILED
+    build.status = Build.Status.CANCELLED
     session.add(build)
     session.commit()
     return {"ok": True}
@@ -154,5 +146,6 @@ async def rebuild(conf: BuildBody, filename: str):
         "python": build.python,
         "package": build.package,
         "status": build.status,
-        "type": build.type
+        "type": build.type,
+        "logs": get_logs(build.id)
     }

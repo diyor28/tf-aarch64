@@ -1,15 +1,14 @@
 <template>
     <div>
-        <build-card v-for="build in buildsStore.tf" :build="build"
-                    :logs="logsStore.getLogs(build.id)"></build-card>
+        <build-card v-for="build in buildsStore.tf" :build="build"></build-card>
         <div class="flex mt-4">
             <div>
                 <label class="label">Python</label>
-                <version-select v-model="buildBody.python" :versions="['3.7', '3.8']"></version-select>
+                <version-select v-model="buildBody.python" :versions="pyVersions"></version-select>
             </div>
             <div class="flex-auto ml-4">
                 <label class="label">Tensorflow</label>
-                <version-select v-model="buildBody.package" :versions="['2.7', '2.8', '2.9']"></version-select>
+                <version-select v-model="buildBody.package" :versions="tfVersions"></version-select>
             </div>
             <div>
                 <button class="btn btn-success" @click="build">Build</button>
@@ -19,17 +18,27 @@
 </template>
 
 <script lang="ts" setup>
-import {ref} from "vue";
+import {computed, ref} from "vue";
 
 import BuildCard from '@/components/BuildCard.vue'
-import {useLogsStore} from "@/stores/logs";
 import VersionSelect from "@/components/VersionSelect.vue";
 import {useBuildsStore} from "@/stores/builds";
+import {useVersionsStore} from "@/stores/versions";
+import {sortVersions} from "@/components/sortVersions";
 
 const buildBody = ref({python: '', package: '', type: 'tensorflow'});
-const logsStore = useLogsStore();
 const buildsStore = useBuildsStore();
-await buildsStore.fetch();
+const versionsStore = useVersionsStore();
+
+const pyVersions = computed(() => {
+    const versions = versionsStore.tensorflow.map(el => el.python);
+    return sortVersions(Array.from(new Set(versions)));
+});
+
+const tfVersions = computed(() => {
+    const versions = versionsStore.tensorflow.map(el => el.package);
+    return sortVersions(Array.from(new Set(versions)));
+});
 
 async function build() {
     try {

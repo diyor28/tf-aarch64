@@ -1,7 +1,7 @@
 <template>
     <select :value="props.modelValue" class="select" @change="emit('update:modelValue', $event.target.value)">
         <option v-for="version in props.versions" :value="version">
-            {{ version }}.x
+            {{ version }}
         </option>
     </select>
 </template>

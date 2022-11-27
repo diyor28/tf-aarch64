@@ -14,11 +14,17 @@
 
 <script lang="ts" setup>
 import {reactive} from "vue";
-import {useLogsStore} from "@/stores/logs";
+import {useBuildsStore} from "@/stores/builds";
+import {useVersionsStore} from "@/stores/versions";
 
-useLogsStore().listenLogs();
+const buildsStore = useBuildsStore();
+const versionsStore = useVersionsStore();
 
-const logs = reactive({});
+versionsStore.fetch();
+
+setInterval(() => {
+    buildsStore.fetch();
+}, 500);
 </script>
 
 <style>

@@ -1,6 +1,4 @@
-import asyncio
 import os
-import queue
 import re
 import subprocess
 import threading
@@ -11,7 +9,7 @@ from .build_model import Session, Build
 from .conf import BUILDER_THREADS
 from .utils import flat2dotted
 
-logs_q = queue.Queue(maxsize=0)
+log_files = {}
 
 
 def create_builders():
@@ -24,6 +22,18 @@ def create_builders():
     return builders
 
 
+def get_logs(pk: str):
+    logs = []
+    file = log_files.get(pk, open(f"./logs/{pk}.txt", "r"))
+    if not file:
+        return []
+    file.seek(0, 0)
+    lines = file.readlines()
+    for idx, line in enumerate(lines[-5:]):
+        logs.append({"line_number": len(lines) + 5 + idx, "line": line.strip()})
+    return logs
+
+
 class BaseThread(threading.Thread):
     _stopped: bool
 
@@ -33,22 +43,6 @@ class BaseThread(threading.Thread):
 
     def stop(self):
         self._stopped = True
-
-
-class Reader(BaseThread):
-    def __init__(self, name: str, file: TextIO):
-        super().__init__()
-        self.name = name
-        self.file = file
-
-    def run(self) -> None:
-        for line_n, line in follow(self.file):
-            if self._stopped:
-                break
-            logs_q.put({"name": self.name, "line_number": line_n, "line": line})
-
-
-readers: list[Reader] = []
 
 
 class Builder(BaseThread):
@@ -107,17 +101,15 @@ class BuildScheduler(BaseThread):
             session.commit()
             self.lock.release()
 
-            pck_combined = ''.join(build.package.split('.'))
+            pck_combined = ''.join(build.package.split('.')[:-1])
             py_combined = ''.join(build.python.split('.'))
             log_file = open(f"./logs/{build.id}.txt", "w+")
 
-            reader = Reader(build.id, log_file)
-            reader.start()
-            readers.append(reader)
+            log_files[build.id] = log_file
 
             commands = []
 
-            for bazel_df in os.listdir("../../bazel"):
+            for bazel_df in os.listdir("../bazel"):
                 bazel_ver = re.findall(r"bazel(\d\d)", bazel_df)[0]
                 commands.append(["docker", "build", "-t", f"bazel:{flat2dotted(bazel_ver)}", "-f", f"../bazel/{bazel_df}", "../bazel/"])
 
@@ -133,33 +125,19 @@ class BuildScheduler(BaseThread):
             builder = Builder(commands=commands, log_file=log_file)
             builder.start()
             while builder.is_alive():
+                if self._stopped:
+                    break
                 self.lock.acquire()
+                session = Session()
                 build = session.query(Build).get(build.id)
                 if build.status == Build.Status.CANCELLED:
                     builder.stop()
                     self.lock.release()
                     break
                 self.lock.release()
-                time.sleep(5)
+                time.sleep(3)
 
             build.status = builder.status
-            reader.stop()
+            log_files.pop(build.id)
             session.add(build)
             session.commit()
-
-
-def follow(file: TextIO):
-    while True:
-        file.seek(0, 0)
-        lines = file.readlines()
-        for idx, line in enumerate(lines[-5:]):
-            yield len(lines) + 5 + idx, line.strip()
-        time.sleep(0.4)
-
-
-async def get_log_updates():
-    while True:
-        try:
-            yield logs_q.get(block=False)
-        except queue.Empty:
-            await asyncio.sleep(0.5)
