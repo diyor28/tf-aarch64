@@ -69,7 +69,7 @@ class Builder(BaseThread):
                 try:
                     p.wait(timeout=5)
                     assert p.returncode == 0
-                    return
+                    break
                 except subprocess.TimeoutExpired:
                     pass
         self.status = Build.Status.COMPLETED
