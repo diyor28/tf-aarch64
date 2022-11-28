@@ -1,14 +1,22 @@
 # Note
 Docs are not complete at the moment.
+Things to include:
+How build instructions change from one file to another
+Configuration options
 
 ## Running webserver using docker
 
-Run in the root of the project
+In the root of the project run
 ```shell
 docker compose up -d --build
 ```
-and you should have a running webserver on port 80. If you go to your http://your-ip you should see a web interface
+and you should have a webserver running on port 80. 
+Now visit http://your-ip you should see the web interface
 
+In the web UI there are two tabs: Tensorflow and TFX. 
+Each page has a version dropdown at the bottom of the page for selecting
+python version, the library version. 
+A version number that looks like `2.7.x` means that it will build the latest changes in the 2.7 branch.
 
 ## Development
 ```shell
