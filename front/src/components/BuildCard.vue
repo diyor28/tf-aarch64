@@ -36,7 +36,8 @@
         </div>
         <div v-if="logs.length" class="build-log mt-4">
             <div v-for="log in logs" class="log-line">
-                <span class="line-number">{{ log.line_number }}</span><span class="ml-4">{{ log.line }}</span>
+                <span class="line-number">{{ log.line_number }}</span>
+                <span class="ml-4" v-html="log.line"></span>
             </div>
         </div>
         <div class="flex mt-4 mb-2">
@@ -47,6 +48,7 @@
 </template>
 
 <script lang="ts" setup>
+import Convert from 'ansi-to-html';
 import {computed} from "vue";
 import {useBuildsStore} from "@/stores/builds";
 
@@ -58,14 +60,24 @@ import Python from "@/components/Icons/Python.vue";
 import Refresh from "@/components/Icons/Refresh.vue";
 import Tensorflow from "@/components/Icons/Tensorflow.vue";
 
-const props = defineProps<{ build: any}>();
-const logs = computed(() => props.build.logs);
+interface LogLine {
+    line_number: number
+    line: string
+}
+
+const props = defineProps<{ build: any }>();
+const converter = new Convert();
+const logs = computed((): LogLine[] => {
+    return props.build.logs.map((log: LogLine): LogLine => {
+        return {line_number: log.line_number, line: converter.toHtml(log.line)};
+    });
+});
 const buildsStore = useBuildsStore();
 
 async function cancel() {
     try {
         await buildsStore.cancel(props.build.id);
-    } catch (e){
+    } catch (e: any){
         if (e.status === 400) {
             alert(e.body.detail);
         }
@@ -75,7 +87,7 @@ async function cancel() {
 async function rebuild() {
     try {
         await buildsStore.put(props.build.id, props.build);
-    } catch (e){
+    } catch (e: any){
         if (e.status === 400) {
             alert(e.body.detail);
         }

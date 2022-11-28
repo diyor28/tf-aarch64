@@ -2,7 +2,7 @@ FROM node:16-alpine as build-stage
 WORKDIR /app
 COPY package*.json ./
 
-RUN npm i --legacy-peer-deps
+RUN npm i
 RUN npm install -g @vue/cli
 
 COPY . .
