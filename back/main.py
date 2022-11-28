@@ -140,3 +140,14 @@ async def rebuild(conf: BuildBody, filename: str):
         "type": build.type,
         "logs": get_logs(build.id)
     }
+
+
+@app.delete("/api/builds/{filename}")
+async def start_build(filename: str):
+    session = Session()
+    session.query(Build).filter_by(id=filename).delete()
+    session.commit()
+    logs_filename = f"./logs/{filename}.txt"
+    if os.path.exists(logs_filename):
+        os.remove(logs_filename)
+    return {"ok": True}

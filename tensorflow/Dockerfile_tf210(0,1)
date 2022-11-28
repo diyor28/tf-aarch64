@@ -1,3 +1,4 @@
+# https://www.tensorflow.org/install/source#tested_build_configurations
 ARG PYTHON_VERSION
 
 FROM python:$PYTHON_VERSION as tf-build

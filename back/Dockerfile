@@ -5,4 +5,4 @@ ENV PYTHONUNBUFFERED=1
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 COPY . .
-CMD gunicorn --bind=0.0.0.0 --access-logfile '-' main:app -k uvicorn.workers.UvicornWorker
+CMD python migrate.py && gunicorn --bind=0.0.0.0 --access-logfile '-' main:app -k uvicorn.workers.UvicornWorker

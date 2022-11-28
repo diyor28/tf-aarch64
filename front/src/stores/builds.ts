@@ -1,11 +1,10 @@
 import {defineStore} from "pinia";
 
 export interface Build {
-	id: number
+	id: string
 	python: string
 	package: string
 	type: string
-	filename: string
 }
 
 export interface State {
@@ -69,6 +68,22 @@ export const useBuildsStore = defineStore("builds", {
 			}
 			return Promise.reject({status: response.status, statusText: response.statusText, body: respBody});
 
+		},
+
+		async remove(filename: string) {
+			const response = await fetch(process.env.VUE_APP_API_URL + `/builds/${filename}`, {
+				method: 'delete',
+				headers: {'Content-Types': 'application/json'}
+			});
+			const respBody = await response.json();
+			if (response.status >= 200 && response.status < 300) {
+				const idx = this.builds.findIndex(el => el.id === filename);
+				if (idx !== - 1) {
+					this.builds.splice(idx, 1);
+				}
+				return respBody;
+			}
+			return Promise.reject({status: response.status, statusText: response.statusText, body: respBody});
 		}
 	},
 	getters: {
