@@ -59,9 +59,12 @@ class Builder(BaseThread):
 
     def build(self):
         for cmd in self.commands:
+            cmd_str = " ".join(cmd)
+            print(f"Builder: Running command \"{cmd_str}\"")
             p = subprocess.Popen(cmd, stdout=self.log_file, stderr=self.log_file)
             while True:
                 if self._stopped:
+                    print("Builder: Received a stop signal. Terminating process...")
                     self.status = Build.Status.CANCELLED
                     p.terminate()
                     return
