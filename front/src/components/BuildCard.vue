@@ -39,6 +39,10 @@
                 <span class="line-number">{{ log.line_number }}</span><span class="ml-4">{{ log.line }}</span>
             </div>
         </div>
+        <div class="flex mt-4 mb-2">
+            <div class="flex-auto"></div>
+            <a :href="`/logs/${props.build.id}.txt`">Full log file</a>
+        </div>
     </div>
 </template>
 

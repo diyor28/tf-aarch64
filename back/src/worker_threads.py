@@ -110,7 +110,7 @@ class BuildScheduler(BaseThread):
             pkg_major_ver = ".".join(pkg_ver_split[:-1])
             pkg_ver = ".".join(pkg_ver_split[:-1]) if pkg_minor_ver == "x" else build.package
             py_combined = ''.join(build.python.split('.'))
-            build_args = ["--build-arg", f"PYTHON_VERSION={py_ver}", f"MINOR_VERSION={'' if pkg_minor_ver == 'x' else pkg_minor_ver}"]
+            build_args = ["--build-arg", f"PYTHON_VERSION={py_ver}", "--build-arg", f"MINOR_VERSION={'' if pkg_minor_ver == 'x' else pkg_minor_ver}"]
             log_file = open(f"./logs/{build.id}.txt", "w+")
 
             log_files[build.id] = log_file

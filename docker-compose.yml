@@ -13,6 +13,7 @@ services:
     volumes:
       - /etc/basic_auth/.htpasswd:/etc/basic_auth/.htpasswd
       - ~/volumes/builds:/www/media/builds
+      - ~/volumes/logs:/www/media/logs
       - ./nginx.conf:/etc/nginx/nginx.conf
 
   front:
