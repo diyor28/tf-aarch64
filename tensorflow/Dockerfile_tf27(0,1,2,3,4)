@@ -7,7 +7,7 @@ RUN apt-get -y install git
 RUN git clone https://github.com/tensorflow/tensorflow
 WORKDIR /tensorflow
 # if MINOR_VERSION is given checkout that specific tag, else use lates patch
-RUN if [[ -z "$MINOR_VERSION" ]] ; then git checkout r2.7 ; else git checkout tags/v2.7.$MINOR_VERSION ; fi
+RUN if [ "$MINOR_VERSION" = "x" ] ; then git checkout r2.7 ; else git checkout tags/v2.7.$MINOR_VERSION ; fi
 
 ENV PYTHONUNBUFFERED=1
 RUN pip install -U pip six 'numpy<1.19.0' wheel setuptools mock 'future>=0.17.1'
