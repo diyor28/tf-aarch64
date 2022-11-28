@@ -1,3 +1,6 @@
+# Note
+Docs are not complete at the moment.
+
 ## Running webserver using docker
 
 Run in the root of the project
@@ -6,6 +9,8 @@ docker compose up -d --build
 ```
 and you should have a running webserver on port 80. If you go to your http://your-ip you should see a web interface
 
+
+## Development
 ```shell
 cd back/
 source venv/bin/active
