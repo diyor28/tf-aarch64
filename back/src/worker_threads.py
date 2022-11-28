@@ -131,15 +131,14 @@ class BuildScheduler(BaseThread):
                 image_name = f"tensorflow_py{py_combined}:{pkg_ver}"
                 docker_file = dfs_map[pkg_major_ver]["df"]
                 commands.append(["docker", "build", "-t", image_name, "-f", docker_file, *build_args, "../tensorflow/"])
-                # command to copy produced wheels to host
-                commands.append(["docker", "run", "-v", "~/volumes/builds:/builds", image_name, "cp", "-a", "/wheels/.", "/builds"])
             else:
                 dfs_map = scan_dockerfiles("../tfx/Dockerfile*", TFX_DF_REGEX)
                 image_name = f"tfx_py{py_combined}:{pkg_ver}"
                 docker_file = dfs_map[pkg_major_ver]["df"]
                 commands.append(["docker", "build", "-t", image_name, "-f", docker_file, *build_args, "../tfx/"])
-                # command to copy produced wheels to host
-                commands.append(["docker", "run", "-v", "~/volumes/builds:/builds", image_name, "cp", "-a", "/wheels/.", "/builds"])
+
+            # command to copy produced wheels to host
+            commands.append(["docker", "run", "-v", "/tf_aarch64/volumes/builds:/builds", image_name, "cp", "-a", "/wheels/.", "/builds"])
 
             print("Starting builder")
             builder = Builder(commands=commands, log_file=log_file)
