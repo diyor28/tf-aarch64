@@ -1,16 +1,15 @@
 ARG PYTHON_VERSION
-ARG MINOR_VERSION
 
 FROM python:$PYTHON_VERSION as tf-build
+ARG MINOR_VERSION
 COPY --from=bazel:4.2 /usr/local/bin/bazel /usr/local/bin
-RUN apt-get -y install git && git clone https://github.com/tensorflow/tensorflow
+RUN DEBIAN_FRONTEND=noninteractive && apt-get -y update && apt-get -y install git openjdk-11-jdk && git clone https://github.com/tensorflow/tensorflow
 WORKDIR /tensorflow
 # if MINOR_VERSION is given checkout that specific tag, else use lates patch
 RUN if [ "$MINOR_VERSION" = "x" ] ; then git checkout r2.8 ; else git checkout tags/v2.8.$MINOR_VERSION ; fi
 
 ENV PYTHONUNBUFFERED=1
-RUN pip install -U pip six 'numpy<1.19.0' wheel setuptools mock 'future>=0.17.1'
-RUN pip install -U keras_applications keras_preprocessing --no-deps
+RUN pip install -U pip six 'numpy<1.19.0' wheel setuptools mock 'future>=0.17.1' && pip install -U keras_applications keras_preprocessing --no-deps
 ENV TF_NEED_CUDA=0 \
 TF_NEED_TENSORRT=0 \
 PYTHON_BIN_PATH="/usr/local/bin/python" \

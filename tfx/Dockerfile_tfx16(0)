@@ -3,10 +3,8 @@ ARG PYTHON_VERSION
 FROM python:$PYTHON_VERSION as tfx-build
 ARG MINOR_VERSION
 COPY --from=bazel:4.2 /usr/local/bin/bazel /usr/local/bin
-RUN apt-get -y install git
-
-RUN pip install numpy
-RUN mkdir /wheels
+RUN DEBIAN_FRONTEND=noninteractive && apt-get -y update && apt-get -y install git openjdk-11-jdk
+RUN pip install numpy && RUN mkdir /wheels
 
 WORKDIR /tfx
 RUN git clone https://github.com/tensorflow/tfx-bsl.git
