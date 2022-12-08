@@ -138,7 +138,7 @@ class BuildScheduler(BaseThread):
                 commands.append(["docker", "build", "-t", image_name, "-f", docker_file, *build_args, "../tfx/"])
 
             # command to copy produced wheels to host
-            commands.append(["docker", "run", "-v", "/tf_aarch64/volumes/builds:/builds", image_name, "cp", "-a", "/wheels/.", "/builds"])
+            commands.append(["docker", "run", "-v", "/tmp/tf_aarch64/volumes/builds:/builds", image_name, "cp", "-a", "/wheels/.", "/builds"])
 
             print("Starting builder")
             builder = Builder(commands=commands, log_file=log_file)
