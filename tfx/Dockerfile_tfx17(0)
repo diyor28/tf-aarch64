@@ -10,12 +10,12 @@ WORKDIR /tfx
 RUN git clone https://github.com/tensorflow/tfx-bsl.git
 WORKDIR /tfx/tfx-bsl
 RUN if [ "$MINOR_VERSION" = "x" ] ; then git checkout r1.7.0 ; else git checkout tags/v1.7.$MINOR_VERSION ; fi
-COPY replace_commits.sh ./
+COPY helpers/replace_commits.sh ./
 RUN chmod +x replace_commits.sh && ./replace_commits.sh && python setup.py bdist_wheel && cp dist/*.whl /wheels
 
 WORKDIR /tfx
 RUN git clone https://github.com/tensorflow/data-validation.git
 WORKDIR /tfx/data-validation
 RUN if [ "$MINOR_VERSION" = "x" ] ; then git checkout r1.7.0 ; else git checkout tags/v1.7.$MINOR_VERSION ; fi
-COPY WORKSPACE ./
+COPY helpers/WORKSPACE ./
 RUN python setup.py bdist_wheel && cp dist/*.whl /wheels
