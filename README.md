@@ -4,6 +4,24 @@ Docs are not complete at the moment. Things to include:
     How build instructions change from one file to another
     Configuration options
 
+## Setup
+
+### Make htpasswd for basic auth
+
+```bash
+$ mkdir basic_auth
+$ htpasswd -c basic_auth/.htpasswd admin
+```
+
+### Make directory for workbench
+
+We use `/tmp/tf_aarch64/` for workbench for this build tool.
+
+```bash
+$ mkdir /tmp/tf_aarch64
+```
+
+
 ## Running webserver using docker
 
 In the root of the project run:

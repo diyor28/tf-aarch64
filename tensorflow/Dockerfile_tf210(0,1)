@@ -10,7 +10,7 @@ WORKDIR /tensorflow
 RUN if [ "$MINOR_VERSION" = "x" ] ; then git checkout r2.10 ; else git checkout tags/v2.10.$MINOR_VERSION ; fi
 
 ENV PYTHONUNBUFFERED=1
-RUN pip install -U pip six 'numpy<1.19.0' wheel setuptools mock 'future>=0.17.1' && pip install -U keras_applications keras_preprocessing --no-deps
+RUN pip install -U pip six 'numpy<1.19.0' wheel setuptools mock 'future>=0.17.1' packaging && pip install -U keras_applications keras_preprocessing --no-deps
 ENV TF_NEED_CUDA=0 \
 TF_NEED_TENSORRT=0 \
 PYTHON_BIN_PATH="/usr/local/bin/python" \
