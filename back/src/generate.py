@@ -39,7 +39,7 @@ def load_template(template: str) -> str:
 def gen_git_command(version: str) -> str:
     minor_version = version.split(".")[-1]
     if minor_version == "x":
-        return f"git checkout r{version}"
+        return f"git checkout r{get_major_version(version)}"
     return f"git checkout tags/v{version}"
 
 
