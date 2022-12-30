@@ -7,8 +7,9 @@ from pydantic.main import BaseModel
 from sqlalchemy.exc import IntegrityError
 
 from src.build_model import Session, Build
-from src.utils import wheels_list, list_versions
+from src.utils import wheels_list
 from src.worker_threads import create_builders, get_logs
+
 
 class BuildBody(BaseModel):
     python: str
@@ -18,6 +19,9 @@ class BuildBody(BaseModel):
 
 if not os.path.exists('./logs'):
     os.mkdir('./logs')
+
+if not os.path.exists('./build_files'):
+    os.mkdir('./build_files')
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")

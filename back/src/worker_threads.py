@@ -1,13 +1,12 @@
 import os
-import re
 import subprocess
 import threading
 import time
 from typing import TextIO
 
 from .build_model import Session, Build
-from .conf import BUILDER_THREADS, TF_DF_REGEX, TFX_DF_REGEX
-from .utils import flat2dotted, scan_dockerfiles
+from .conf import BUILDER_THREADS
+from .generate import tf_bazel_version, tfx_bazel_version, generate, build_command
 
 log_files = {}
 
@@ -109,33 +108,30 @@ class BuildScheduler(BaseThread):
             session.commit()
             self.lock.release()
 
-            py_ver = build.python
-            pkg_ver_split = build.package.split(".")
-            pkg_minor_ver = pkg_ver_split[-1]
-            pkg_major_ver = ".".join(pkg_ver_split[:-1])
-            pkg_ver = ".".join(pkg_ver_split[:-1]) if pkg_minor_ver == "x" else build.package
             py_combined = ''.join(build.python.split('.'))
-            build_args = ["--build-arg", f"PYTHON_VERSION={py_ver}", "--build-arg", f"MINOR_VERSION={pkg_minor_ver}"]
             log_file = open(f"./logs/{build.id}.txt", "w+")
 
             log_files[build.id] = log_file
 
             commands = []
 
-            for bazel_df in os.listdir("../bazel"):
-                bazel_ver = re.findall(r"bazel(\d\d)", bazel_df)[0]
-                commands.append(["docker", "build", "-t", f"bazel:{flat2dotted(bazel_ver)}", "-f", f"../bazel/{bazel_df}", "../bazel/"])
+            if build.type == Build.Type.TENSORFLOW:
+                bazel_ver = tf_bazel_version(build.package)
+            else:
+                bazel_ver = tfx_bazel_version(build.package)
+
+            bazel_df = generate("bazel", bazel_ver)
+            build_cmd, _ = build_command("bazel", bazel_ver, f"./build_files/{bazel_df}")
+            commands.append(build_cmd.split(" "))
 
             if build.type == Build.Type.TENSORFLOW:
-                dfs_map = scan_dockerfiles("../tensorflow/Dockerfile*", TF_DF_REGEX)
-                image_name = f"tensorflow_py{py_combined}:{pkg_ver}"
-                docker_file = dfs_map[pkg_major_ver]["df"]
-                commands.append(["docker", "build", "-t", image_name, "-f", docker_file, *build_args, "../tensorflow/"])
+                docker_file = generate("tensorflow", build.package, build.python)
+                build_cmd, image_name = build_command("tensorflow", build.package, f"./build_files/{docker_file}", py_ver=build.python)
+                commands.append(build_cmd.split(" "))
             else:
-                dfs_map = scan_dockerfiles("../tfx/Dockerfile*", TFX_DF_REGEX)
-                image_name = f"tfx_py{py_combined}:{pkg_ver}"
-                docker_file = dfs_map[pkg_major_ver]["df"]
-                commands.append(["docker", "build", "-t", image_name, "-f", docker_file, *build_args, "../tfx/"])
+                docker_file = generate("tfx", build.package, build.python)
+                build_cmd, image_name = build_command("tfx", build.package, f"./build_files/{docker_file}", py_ver=build.python)
+                commands.append(build_cmd.split(" "))
 
             # command to copy produced wheels to host
             commands.append(["docker", "run", "-v", "/tmp/tf_aarch64/volumes/builds:/builds", image_name, "cp", "-a", "/wheels/.", "/builds"])

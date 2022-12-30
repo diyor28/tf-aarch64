@@ -1,5 +1,6 @@
 import argparse
-from src.generate import tf_dockerfile, tfx_dockerfile, bazel_dockerfile, write_to_file
+
+from back.src.generate import tf_dockerfile, tfx_dockerfile, bazel_dockerfile, write_to_file
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate Dockerfile to build tensorflow, tfx or bazel')
@@ -20,3 +21,4 @@ if __name__ == '__main__':
         instructions = bazel_dockerfile(args.version)
 
     write_to_file(instructions, args.path)
+    print("Saved dockerfile to ", args.path)

@@ -1,8 +1,6 @@
 from sqlalchemy import Column, DateTime, String, func, create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-from .utils import dotted2flat
-
 Base = declarative_base()
 
 db_uri = "sqlite:///./data/data.db?check_same_thread=False"
@@ -11,11 +9,11 @@ Session = sessionmaker(bind=eng)
 
 
 def get_filename(py_version: str, pkg_version: str, pkg_type: str):
-    tf_combined = dotted2flat(pkg_version)
-    py_combined = dotted2flat(py_version)
+    pkg_combined = "".join(pkg_version.split("."))
+    py_combined = "".join(py_version.split("."))
     if pkg_type == Build.Type.TFX:
-        return f"tfx{tf_combined}_py{py_combined}"
-    return f"tf{tf_combined}_py{py_combined}"
+        return f"tfx{pkg_combined}_py{py_combined}"
+    return f"tf{pkg_combined}_py{py_combined}"
 
 
 def default_id(context):
