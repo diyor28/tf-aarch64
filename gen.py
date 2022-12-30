@@ -1,4 +1,5 @@
 import argparse
+import os
 
 from back.src.generate import tf_dockerfile, tfx_dockerfile, bazel_dockerfile, write_to_file
 
@@ -11,6 +12,7 @@ if __name__ == '__main__':
     parser.add_argument('path', help='Where to save generated Dockerfile: e.g. ./dockerfiles/Dockerfile_tf37_py38')
 
     args = parser.parse_args()
+    os.environ["CLI"] = "1"
 
     instructions = ""
     if args.package == "tensorflow":

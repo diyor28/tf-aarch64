@@ -1,10 +1,17 @@
 __all__ = ["tfx_bazel_version", "tf_bazel_version", "tf_dockerfile", "tfx_dockerfile", "bazel_dockerfile", "generate", "write_to_file", "build_command"]
 
-import os.path
+import os
 import typing
 
+CLI_MODE = os.getenv("CLI", False)
+if CLI_MODE:
+    TEMPLATES_DIR = "./templates"
+else:
+    TEMPLATES_DIR = "../templates"
 
-def build_command(pkg_type: str, pkg_ver: str, df_path: str, context_path: str = "../templates/context/", py_ver: typing.Optional[str] = None) -> tuple[str, str]:
+
+def build_command(pkg_type: str, pkg_ver: str, df_path: str, py_ver: typing.Optional[str] = None) -> tuple[str, str]:
+    context_path = os.path.join(CLI_MODE, "context")
     if pkg_type == "bazel":
         image_name = f"bazel:{pkg_ver}"
         return f"docker build -t {image_name} -f {df_path} {context_path}", image_name
@@ -25,7 +32,7 @@ def get_major_version(version: str) -> str:
 
 
 def load_template(template: str) -> str:
-    with open(f"./templates/{template}.template") as f:
+    with open(os.path.join(TEMPLATES_DIR, f"{template}.template")) as f:
         return "".join(f.readlines())
 
 

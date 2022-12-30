@@ -119,11 +119,11 @@ class BuildScheduler(BaseThread):
 
             if build.type == Build.Type.TENSORFLOW:
                 docker_file = generate("tensorflow", build.package, build.python)
-                build_cmd, image_name = build_command("tensorflow", build.package, f"./build_files/{docker_file}", py_ver=build.python)
+                build_cmd, image_name = build_command("tensorflow", build.package, f"./build_files/{docker_file}", build.python)
                 commands.append(build_cmd.split(" "))
             else:
                 docker_file = generate("tfx", build.package, build.python)
-                build_cmd, image_name = build_command("tfx", build.package, f"./build_files/{docker_file}", py_ver=build.python)
+                build_cmd, image_name = build_command("tfx", build.package, f"./build_files/{docker_file}", build.python)
                 commands.append(build_cmd.split(" "))
 
             # command to copy produced wheels to host
