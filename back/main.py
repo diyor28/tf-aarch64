@@ -96,7 +96,11 @@ def get_versions():
         "1.9.0",
         "1.9.x",
         "1.10.0",
-        "1.10.x"
+        "1.10.x",
+        "1.11.0",
+        "1.11.x",
+        "1.12.0",
+        "1.12.x"
     ]
 
     return {"tensorflow": tf_versions, "tfx": tfx_versions}

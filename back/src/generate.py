@@ -25,8 +25,8 @@ def get_major_version(version: str) -> str:
 
 
 def load_template(template: str) -> str:
-    with open(f"../templates/{template}.template") as f:
-        return "\n".join(f.readlines())
+    with open(f"./templates/{template}.template") as f:
+        return "".join(f.readlines())
 
 
 def gen_git_command(version: str) -> str:
@@ -78,14 +78,14 @@ def tfx_dockerfile(py_version: str, tfx_version: str):
     bazel_version = tfx_bazel_version(tfx_version)
     git_command = gen_git_command(tfx_version)
     copy_arrow_command = ""
-    if major_version in ["1.10"]:
+    if major_version in ["1.10", "1.11", "1.12"]:
         copy_arrow_command = "COPY tfx/arrow.BUILD ./third_party"
     copy_workspace_command = ""
     if major_version in ["1.4", "1.5", "1.6", "1.7"]:
         copy_workspace_command = "COPY tfx/WORKSPACE ./"
 
     template_string = load_template("tfx")
-    return template_string.format(py_version=py_version, bazel_version=bazel_version, copy_arrow_comman=copy_arrow_command,
+    return template_string.format(py_version=py_version, bazel_version=bazel_version, copy_arrow_command=copy_arrow_command,
                                   git_command=git_command, copy_workspace_command=copy_workspace_command)
 
 

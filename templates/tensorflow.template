@@ -8,13 +8,13 @@ RUN {git_command}
 ENV PYTHONUNBUFFERED=1
 RUN pip install
 RUN pip install -U six wheel '{numpy_version}' setuptools mock 'future>=0.17.1' packaging && pip install -U keras_applications keras_preprocessing --no-deps
-ENV TF_NEED_CUDA=0 \\
-TF_NEED_TENSORRT=0 \\
-PYTHON_BIN_PATH="/usr/local/bin/python" \\
-USE_DEFAULT_PYTHON_LIB_PATH=1 \\
-TF_NEED_ROCM=0 \\
-CC_OPT_FLAGS="-Wno-sign-compare" \\
-TF_DOWNLOAD_CLANG=0 \\
+ENV TF_NEED_CUDA=0 \
+TF_NEED_TENSORRT=0 \
+PYTHON_BIN_PATH="/usr/local/bin/python" \
+USE_DEFAULT_PYTHON_LIB_PATH=1 \
+TF_NEED_ROCM=0 \
+CC_OPT_FLAGS="-Wno-sign-compare" \
+TF_DOWNLOAD_CLANG=0 \
 TF_SET_ANDROID_WORKSPACE=0
 RUN ./configure && bazel build --config=opt -c opt //tensorflow/tools/pip_package:build_pip_package
 RUN ./bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_pkg
