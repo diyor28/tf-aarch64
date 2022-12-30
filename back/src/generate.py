@@ -10,21 +10,24 @@ else:
     TEMPLATES_DIR = "../templates"
 
 
-def build_command(pkg_type: str, pkg_ver: str, df_path: str, py_ver: typing.Optional[str] = None) -> tuple[str, str]:
+def build_command(pkg_type: str, pkg_ver: str, df_path: str, py_ver: typing.Optional[str] = None, use_cache=True) -> tuple[str, str]:
     context_path = os.path.join(TEMPLATES_DIR, "context")
+    extra_args = []
+
     if pkg_type == "bazel":
         image_name = f"bazel:{pkg_ver}"
-        return f"docker build -t {image_name} -f {df_path} {context_path}", image_name
-
-    if pkg_type == "tensorflow":
+    elif pkg_type == "tensorflow":
         image_name = f"tensorflow_py{py_ver}:{pkg_ver}"
-        return f"docker build -t {image_name} -f {df_path} {context_path}", image_name
-
-    if pkg_type == "tfx":
+        if use_cache:
+            extra_args.append("--network=bazel-cache")
+    elif pkg_type == "tfx":
+        if use_cache:
+            extra_args.append("--network=bazel-cache")
         image_name = f"tfx_py{py_ver}:{pkg_ver}"
-        return f"docker build -t {image_name} -f {df_path} {context_path}", image_name
+    else:
+        raise ValueError(f"Unknown package type {pkg_type}")
 
-    raise ValueError(f"Unknown package type {pkg_type}")
+    return " ".join(["docker", "buildx", "build", "--platform=linux/arm64", *extra_args, "-t", image_name, "-f", df_path, context_path]), image_name
 
 
 def get_major_version(version: str) -> str:

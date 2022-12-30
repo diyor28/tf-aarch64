@@ -33,3 +33,18 @@ services:
       - /tmp/tf_aarch64/volumes/logs:/app/logs
       - /tmp/tf_aarch64/volumes/data:/app/data
       - ./templates:/templates
+
+  bazel_cache:
+    image: diyor28/bazel-remote
+    container_name: bazel-cache
+    volumes:
+      - /tmp/tf_aarch64/volumes/bazel-cache:/data
+    ports:
+      - 9090:8080
+      - 9092:9092
+    networks:
+      - bazel-cache
+
+networks:
+  bazel-cache:
+    name: bazel-cache

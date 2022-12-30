@@ -6,7 +6,8 @@ WORKDIR /tfx-bsl
 RUN {git_command}
 COPY tfx/replace_commits.sh ./
 {copy_arrow_command}
-RUN chmod +x replace_commits.sh && ./replace_commits.sh && python setup.py bdist_wheel && cp dist/*.whl /wheels
+RUN chmod +x replace_commits.sh && ./replace_commits.sh && echo $'\nbuild --remote_cache=grpc://bazel-cache:9092' >> .bazelrc
+RUN python setup.py bdist_wheel && cp dist/*.whl /wheels
 
 WORKDIR /
 RUN git clone https://github.com/tensorflow/data-validation.git

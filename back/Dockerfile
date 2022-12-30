@@ -1,5 +1,5 @@
 FROM python:3.9.4 as python-build
-RUN apt-get update; apt-get install docker.io -y
+RUN apt-get update && apt-get install -y docker.io
 WORKDIR /app
 ENV PYTHONUNBUFFERED=1
 COPY requirements.txt .

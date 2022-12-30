@@ -24,15 +24,15 @@
             </div>
             <div>
                 <div class="flex space-x-4">
-                    <button class="btn flex align-center items-center space-x-2" @click="rebuild">
+                    <button class="btn flex align-center items-center space-x-2" @click.stop="rebuild">
                         Rebuild
                         <refresh-icon class="icon-sm"></refresh-icon>
                     </button>
-                    <button class="btn flex align-center items-center space-x-2" @click="cancel">
+                    <button class="btn flex align-center items-center space-x-2" @click.stop="cancel">
                         Cancel
                         <stop-icon class="icon-sm"></stop-icon>
                     </button>
-                    <button class="btn flex align-center items-center space-x-2" @click="remove">
+                    <button class="btn flex align-center items-center space-x-2" @click.stop="remove">
                         Delete
                         <trash-icon class="icon-sm"></trash-icon>
                     </button>
