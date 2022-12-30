@@ -8,8 +8,6 @@ from .build_model import Session, Build
 from .conf import BUILDER_THREADS
 from .generate import tf_bazel_version, tfx_bazel_version, generate, build_command
 
-log_files = {}
-
 
 def create_builders():
     lock = threading.Lock()
@@ -106,10 +104,7 @@ class BuildScheduler(BaseThread):
             session.commit()
             self.lock.release()
 
-            py_combined = ''.join(build.python.split('.'))
             log_file = open(f"./logs/{build.id}.txt", "w+", errors='ignore')
-
-            log_files[build.id] = log_file
 
             commands = []
 
@@ -151,6 +146,5 @@ class BuildScheduler(BaseThread):
                 time.sleep(3)
 
             build.status = builder.status
-            log_files.pop(build.id)
             session.add(build)
             session.commit()
