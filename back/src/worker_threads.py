@@ -26,14 +26,15 @@ def get_logs(pk: str, n_lines: int = 15):
     filename = f"./logs/{pk}.txt"
     if not os.path.exists(filename):
         return []
-    file = log_files.get(pk, open(filename, "r"))
+    file = log_files.get(pk, open(filename, "r", errors='ignore'))
     if not file:
         return []
     file.seek(0, 0)
-    lines = file.readlines()
-    for idx, line in enumerate(lines[-1 * n_lines:]):
-        logs.append({"line_number": len(lines) + 5 + idx, "line": line.strip()})
-    return logs
+    with file:
+        lines = file.readlines()
+        for idx, line in enumerate(lines[-1 * n_lines:]):
+            logs.append({"line_number": len(lines) + 5 + idx, "line": line.strip()})
+        return logs
 
 
 class BaseThread(threading.Thread):
