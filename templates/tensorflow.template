@@ -7,7 +7,7 @@ RUN {git_command}
 
 ENV PYTHONUNBUFFERED=1
 RUN pip install -U pip
-RUN pip install -U six wheel '{numpy_version}' setuptools mock 'future>=0.17.1' packaging && pip install -U keras_applications keras_preprocessing --no-deps
+RUN pip install -U six wheel '{numpy_version}' requests setuptools mock 'future>=0.17.1' packaging && pip install -U keras_applications keras_preprocessing --no-deps
 ENV TF_NEED_CUDA=0 \
 TF_NEED_TENSORRT=0 \
 PYTHON_BIN_PATH="/usr/local/bin/python" \
