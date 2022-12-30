@@ -11,7 +11,7 @@ else:
 
 
 def build_command(pkg_type: str, pkg_ver: str, df_path: str, py_ver: typing.Optional[str] = None) -> tuple[str, str]:
-    context_path = os.path.join(CLI_MODE, "context")
+    context_path = os.path.join(TEMPLATES_DIR, "context")
     if pkg_type == "bazel":
         image_name = f"bazel:{pkg_ver}"
         return f"docker build -t {image_name} -f {df_path} {context_path}", image_name
