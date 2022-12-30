@@ -23,8 +23,7 @@ services:
 
   back:
     environment:
-      - WHEELS_DIR=/app/builds
-      - BUILDER_THREADS=6
+      - BUILDER_THREADS
     restart: always
     build:
       context: ./back
@@ -33,6 +32,4 @@ services:
       - /tmp/tf_aarch64/volumes/builds:/app/builds
       - /tmp/tf_aarch64/volumes/logs:/app/logs
       - /tmp/tf_aarch64/volumes/data:/app/data
-      - ./tensorflow:/tensorflow
-      - ./tfx:/tfx
-      - ./bazel:/bazel
+      - ./templates:/templates
