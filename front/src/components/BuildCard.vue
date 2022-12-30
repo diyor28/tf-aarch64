@@ -1,5 +1,5 @@
 <template>
-    <div class="card mt-4">
+    <div class="card mt-4" :class="{'selected': selected}">
         <div class="flex align-center justify-center">
             <div class="flex-auto">
                 <div style="display: inline-flex">
@@ -39,7 +39,7 @@
                 </div>
             </div>
         </div>
-        <div v-if="logs.length" class="build-log mt-4">
+        <div v-if="logs.length && selected" class="build-log mt-4">
             <div v-for="log in logs" class="log-line">
                 <span class="line-number">{{ log.line_number }}</span>
                 <span class="ml-4" v-html="log.line"></span>
@@ -71,7 +71,7 @@ interface LogLine {
     line: string
 }
 
-const props = defineProps<{ build: any }>();
+const props = defineProps<{ build: any, selected: boolean }>();
 const converter = new Convert();
 const logs = computed((): LogLine[] => {
     return props.build.logs.map((log: LogLine): LogLine => {
@@ -159,5 +159,9 @@ async function remove() {
 .icon-sm {
     height: 16px;
     width: 16px;
+}
+
+.selected {
+    border: 1px dashed #65baff;
 }
 </style>

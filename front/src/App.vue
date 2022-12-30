@@ -129,6 +129,10 @@ button {
     margin-top: 1rem;
 }
 
+.mb-2 {
+    margin-bottom: 0.5rem;
+}
+
 .my-auto {
     margin-top: auto;
     margin-bottom: auto;
