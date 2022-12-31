@@ -109,7 +109,7 @@ def get_versions():
 @app.get("/api/builds")
 def get_builds(t: str = ''):
     session = Session()
-    query_list = session.query(Build).order_by(Build.created_at.desc())
+    query_list = session.query(Build).order_by(Build.update_at.desc())
     if t:
         query_list = query_list.filter(Build.type == t)
     result = []
