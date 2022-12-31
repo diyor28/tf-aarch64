@@ -11,20 +11,19 @@ else:
 
 
 def build_command(pkg_type: str, pkg_ver: str, df_path: str, py_ver: typing.Optional[str] = None, use_cache=True) -> tuple[str, str]:
-    py_ver_combined = "".join(py_ver.split(".")) if py_ver else ""
     context_path = os.path.join(TEMPLATES_DIR, "context")
     extra_args = []
 
     if pkg_type == "bazel":
         image_name = f"bazel:{pkg_ver}"
     elif pkg_type == "tensorflow":
-        image_name = f"tensorflow_py{py_ver_combined}:{pkg_ver}"
+        image_name = f"tensorflow:{pkg_ver}-py{py_ver}"
         if use_cache:
             extra_args.append("--network=bazel-cache")
     elif pkg_type == "tfx":
         if use_cache:
             extra_args.append("--network=bazel-cache")
-        image_name = f"tfx_py{py_ver_combined}:{pkg_ver}"
+        image_name = f"tfdv:{pkg_ver}-py{py_ver}"
     else:
         raise ValueError(f"Unknown package type {pkg_type}")
 
@@ -80,12 +79,11 @@ def tf_io_command(version: str) -> str:
 
 
 def tf_bazel_version(version: str) -> str:
-    major_version = get_major_version(version)
-    if major_version == "2.7":
-        return "3.7"
-    if major_version == "2.8":
-        return "4.2"
-    return "5.3"
+    version_matrix = {
+        "2.7": "3.7.2",
+        "2.8": "4.2.3",
+    }
+    return version_matrix.get(get_major_version(version), "5.3.2")
 
 
 def tf_numpy_version(version: str) -> str:
@@ -109,7 +107,7 @@ def tf_dockerfile(py_version: str, tf_version: str, use_cache=False):
 
 
 def tfx_bazel_version(tfx_version: str):
-    return "4.2"
+    return "4.2.3"
 
 
 def tfx_dockerfile(py_version: str, tfx_version: str, use_cache=False):
@@ -133,12 +131,6 @@ def tfx_dockerfile(py_version: str, tfx_version: str, use_cache=False):
 
 
 def bazel_dockerfile(bazel_version: str):
-    if bazel_version == "3.7":
-        bazel_version = "3.7.2"
-    elif bazel_version == "4.2":
-        bazel_version = "4.2.3"
-    elif bazel_version == "5.3":
-        bazel_version = "5.3.2"
     template_string = load_template("bazel")
 
     return template_string.format(bazel_version=bazel_version)

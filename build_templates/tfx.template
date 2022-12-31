@@ -19,3 +19,8 @@ RUN {tfdv_git_command}
 COPY tfx/replace_commits.sh ./
 RUN chmod +x replace_commits.sh && ./replace_commits.sh
 RUN python setup.py bdist_wheel && cp dist/*.whl /wheels
+
+FROM python:{py_version} as tfx-install
+COPY --from=tfx-build /wheels/*.whl wheels/
+# Install command
+CMD ["python"]

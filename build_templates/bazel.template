@@ -1,4 +1,4 @@
-FROM python:3.7.15
+FROM python:3.7
 RUN DEBIAN_FRONTEND=noninteractive && apt-get -y update && apt-get -y install build-essential openjdk-11-jdk zip unzip wget
 RUN wget https://github.com/bazelbuild/bazel/releases/download/{bazel_version}/bazel-{bazel_version}-dist.zip
 RUN mkdir bazel && unzip -d ./bazel bazel-{bazel_version}-dist.zip
