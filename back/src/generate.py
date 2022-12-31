@@ -80,24 +80,27 @@ def tf_numpy_version(version: str) -> str:
     return 'numpy<1.24'
 
 
-def tf_dockerfile(py_version: str, tf_version: str):
+def tf_dockerfile(py_version: str, tf_version: str, use_cache=False):
     bazel_version = tf_bazel_version(tf_version)
     numpy_version = tf_numpy_version(py_version)
     git_command = gen_git_command(tf_version)
     protobuf_command = tf_protobuf_command(tf_version)
     tensorflow_io_command = tf_io_command(tf_version)
+    use_cache_command = ""
+    if use_cache:
+        use_cache_command = "echo $'\nbuild --remote_cache=grpc://bazel-cache:9092' >> .bazelrc"
 
     template_string = load_template("tensorflow")
     return template_string.format(git_command=git_command, py_version=py_version, bazel_version=bazel_version,
                                   numpy_version=numpy_version, protobuf_command=protobuf_command,
-                                  tensorflow_io_command=tensorflow_io_command)
+                                  tensorflow_io_command=tensorflow_io_command, use_cache_command=use_cache_command)
 
 
 def tfx_bazel_version(tfx_version: str):
     return "4.2"
 
 
-def tfx_dockerfile(py_version: str, tfx_version: str):
+def tfx_dockerfile(py_version: str, tfx_version: str, use_cache=False):
     major_version = get_major_version(tfx_version)
     bazel_version = tfx_bazel_version(tfx_version)
     git_command = gen_git_command(tfx_version)
@@ -107,10 +110,16 @@ def tfx_dockerfile(py_version: str, tfx_version: str):
     copy_workspace_command = ""
     if major_version in ["1.4", "1.5", "1.6", "1.7"]:
         copy_workspace_command = "COPY tfx/WORKSPACE ./"
+    use_cache_command = ""
+    if use_cache:
+        use_cache_command = "echo $'\nbuild --remote_cache=grpc://bazel-cache:9092' >> .bazelrc"
 
     template_string = load_template("tfx")
-    return template_string.format(py_version=py_version, bazel_version=bazel_version, copy_arrow_command=copy_arrow_command,
-                                  git_command=git_command, copy_workspace_command=copy_workspace_command)
+    return template_string.format(py_version=py_version, bazel_version=bazel_version,
+                                  tfdv_git_command=git_command,
+                                  tfx_bsl_git_command=git_command,
+                                  copy_arrow_command=copy_arrow_command, copy_workspace_command=copy_workspace_command,
+                                  use_cache_command=use_cache_command)
 
 
 def bazel_dockerfile(bazel_version: str):
@@ -130,7 +139,7 @@ def write_to_file(instructions: str, path: str):
         f.write(instructions)
 
 
-def generate(pkg_type: str, pkg_ver: str, py_ver: typing.Optional[str] = None) -> str:
+def generate(pkg_type: str, pkg_ver: str, py_ver: typing.Optional[str] = None, **kwargs) -> str:
     pkg_ver_flat = "".join(pkg_ver.split("."))
     py_ver_flat = "".join(py_ver.split(".")) if py_ver else ""
 
@@ -139,10 +148,10 @@ def generate(pkg_type: str, pkg_ver: str, py_ver: typing.Optional[str] = None) -
         instructions = bazel_dockerfile(pkg_ver)
     elif pkg_type == "tensorflow":
         df_name = f"tf{pkg_ver_flat}_py{py_ver_flat}"
-        instructions = tf_dockerfile(py_ver, pkg_ver)
+        instructions = tf_dockerfile(py_ver, pkg_ver, **kwargs)
     elif pkg_type == "tfx":
         df_name = f"tfx{pkg_ver_flat}_py{py_ver_flat}"
-        instructions = tfx_dockerfile(py_ver, pkg_ver)
+        instructions = tfx_dockerfile(py_ver, pkg_ver, **kwargs)
     else:
         raise ValueError(f"Unknown package type {pkg_type}")
 

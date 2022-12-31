@@ -17,8 +17,9 @@ TF_NEED_ROCM=0 \
 CC_OPT_FLAGS="-Wno-sign-compare" \
 TF_DOWNLOAD_CLANG=0 \
 TF_SET_ANDROID_WORKSPACE=0
-RUN echo $'\nbuild --remote_cache=grpc://bazel-cache:9092' >> .bazelrc && ./configure
-RUN bazel build --config=opt -c opt //tensorflow/tools/pip_package:build_pip_package && ./bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_pkg
+{use_cache_command}
+RUN ./configure && bazel build --config=opt -c opt //tensorflow/tools/pip_package:build_pip_package
+RUN ./bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_pkg
 
 FROM python:{py_version} as tf-install
 COPY --from=tf-build /tmp/tensorflow_pkg/*.whl wheels/

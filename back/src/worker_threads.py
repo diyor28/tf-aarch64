@@ -118,11 +118,11 @@ class BuildScheduler(BaseThread):
             commands.append(build_cmd.split(" "))
 
             if build.type == Build.Type.TENSORFLOW:
-                docker_file = generate("tensorflow", build.package, build.python)
+                docker_file = generate("tensorflow", build.package, build.python, use_cache=True)
                 build_cmd, image_name = build_command("tensorflow", build.package, f"./build_files/{docker_file}", build.python, use_cache=True)
                 commands.append(build_cmd.split(" "))
             else:
-                docker_file = generate("tfx", build.package, build.python)
+                docker_file = generate("tfx", build.package, build.python, use_cache=True)
                 build_cmd, image_name = build_command("tfx", build.package, f"./build_files/{docker_file}", build.python, use_cache=True)
                 commands.append(build_cmd.split(" "))
 
