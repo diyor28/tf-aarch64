@@ -46,6 +46,12 @@ def gen_git_command(version: str) -> str:
     return f"git checkout tags/v{version}"
 
 
+def tf_use_cache_command(use_cache: bool):
+    if not use_cache:
+        return ""
+    return "RUN echo $'\\nbuild --remote_cache=grpc://bazel-cache:9092' >> .bazelrc"
+
+
 def tf_protobuf_command(version: str) -> str:
     major_version = get_major_version(version)
     if major_version == "2.8":
@@ -86,9 +92,7 @@ def tf_dockerfile(py_version: str, tf_version: str, use_cache=False):
     git_command = gen_git_command(tf_version)
     protobuf_command = tf_protobuf_command(tf_version)
     tensorflow_io_command = tf_io_command(tf_version)
-    use_cache_command = ""
-    if use_cache:
-        use_cache_command = "echo $'\nbuild --remote_cache=grpc://bazel-cache:9092' >> .bazelrc"
+    use_cache_command = tf_use_cache_command(use_cache)
 
     template_string = load_template("tensorflow")
     return template_string.format(git_command=git_command, py_version=py_version, bazel_version=bazel_version,
@@ -110,9 +114,7 @@ def tfx_dockerfile(py_version: str, tfx_version: str, use_cache=False):
     copy_workspace_command = ""
     if major_version in ["1.4", "1.5", "1.6", "1.7"]:
         copy_workspace_command = "COPY tfx/WORKSPACE ./"
-    use_cache_command = ""
-    if use_cache:
-        use_cache_command = "echo $'\nbuild --remote_cache=grpc://bazel-cache:9092' >> .bazelrc"
+    use_cache_command = tf_use_cache_command(use_cache)
 
     template_string = load_template("tfx")
     return template_string.format(py_version=py_version, bazel_version=bazel_version,
