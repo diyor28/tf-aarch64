@@ -40,10 +40,17 @@ def load_template(template: str) -> str:
         return "".join(f.readlines())
 
 
-def gen_git_command(version: str) -> str:
+def tf_git_command(version: str) -> str:
     minor_version = version.split(".")[-1]
     if minor_version == "x":
         return f"git checkout r{get_major_version(version)}"
+    return f"git checkout tags/v{version}"
+
+
+def tfx_git_command(version: str) -> str:
+    minor_version = version.split(".")[-1]
+    if minor_version == "x":
+        return f"git checkout r{get_major_version(version)}.0"
     return f"git checkout tags/v{version}"
 
 
@@ -90,7 +97,7 @@ def tf_numpy_version(version: str) -> str:
 def tf_dockerfile(py_version: str, tf_version: str, use_cache=False):
     bazel_version = tf_bazel_version(tf_version)
     numpy_version = tf_numpy_version(py_version)
-    git_command = gen_git_command(tf_version)
+    git_command = tf_git_command(tf_version)
     protobuf_command = tf_protobuf_command(tf_version)
     tensorflow_io_command = tf_io_command(tf_version)
     use_cache_command = tf_use_cache_command(use_cache)
@@ -108,7 +115,7 @@ def tfx_bazel_version(tfx_version: str):
 def tfx_dockerfile(py_version: str, tfx_version: str, use_cache=False):
     major_version = get_major_version(tfx_version)
     bazel_version = tfx_bazel_version(tfx_version)
-    git_command = gen_git_command(tfx_version)
+    git_command = tfx_git_command(tfx_version)
     copy_arrow_command = ""
     if major_version in ["1.10", "1.11", "1.12"]:
         copy_arrow_command = "COPY tfx/arrow.BUILD ./third_party"
