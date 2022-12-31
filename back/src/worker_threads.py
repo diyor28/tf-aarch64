@@ -109,15 +109,6 @@ class BuildScheduler(BaseThread):
             commands = []
 
             if build.type == Build.Type.TENSORFLOW:
-                bazel_ver = tf_bazel_version(build.package)
-            else:
-                bazel_ver = tfx_bazel_version(build.package)
-
-            bazel_df = generate("bazel", bazel_ver)
-            build_cmd, _ = build_command("bazel", bazel_ver, f"./build_files/{bazel_df}")
-            commands.append(build_cmd.split(" "))
-
-            if build.type == Build.Type.TENSORFLOW:
                 docker_file = generate("tensorflow", build.package, build.python, use_cache=True)
                 build_cmd, image_name = build_command("tensorflow", build.package, f"./build_files/{docker_file}", build.python, use_cache=True)
                 commands.append(build_cmd.split(" "))

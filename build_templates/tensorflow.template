@@ -1,6 +1,6 @@
 # https://www.tensorflow.org/install/source#tested_build_configurations
 FROM python:{py_version} as tf-build
-COPY --from=bazel:{bazel_version} /usr/local/bin/bazel /usr/local/bin
+COPY --from=diyor28/bazel:{bazel_version} /usr/local/bin/bazel /usr/local/bin
 RUN DEBIAN_FRONTEND=noninteractive && apt-get -y update && apt-get -y install git openjdk-11-jdk
 RUN git clone https://github.com/tensorflow/tensorflow
 WORKDIR /tensorflow

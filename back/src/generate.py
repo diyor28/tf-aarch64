@@ -1,4 +1,4 @@
-__all__ = ["tfx_bazel_version", "tf_bazel_version", "tf_dockerfile", "tfx_dockerfile", "bazel_dockerfile", "generate", "write_to_file", "build_command"]
+__all__ = ["tf_dockerfile", "tfx_dockerfile", "bazel_dockerfile", "generate", "write_to_file", "build_command"]
 
 import os
 import typing
