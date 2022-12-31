@@ -28,7 +28,7 @@ def build_command(pkg_type: str, pkg_ver: str, df_path: str, py_ver: typing.Opti
     else:
         raise ValueError(f"Unknown package type {pkg_type}")
 
-    return " ".join(["docker", "buildx", "build", "--platform=linux/arm64", *extra_args, "-t", image_name, "-f", df_path, context_path]), image_name
+    return " ".join(["docker", "build", *extra_args, "-t", image_name, "-f", df_path, context_path]), image_name
 
 
 def get_major_version(version: str) -> str:
