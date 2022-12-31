@@ -11,7 +11,7 @@ else:
 
 
 def build_command(pkg_type: str, pkg_ver: str, df_path: str, py_ver: typing.Optional[str] = None, use_cache=True) -> tuple[str, str]:
-    py_ver_combined = "".join(py_ver.split("."))
+    py_ver_combined = "".join(py_ver.split(".")) if py_ver else ""
     context_path = os.path.join(TEMPLATES_DIR, "context")
     extra_args = []
 
