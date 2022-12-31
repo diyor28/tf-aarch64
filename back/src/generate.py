@@ -67,7 +67,7 @@ def tf_io_command(version: str) -> str:
         "2.10": "0.27.0",
         "2.9": "0.26.0",
         "2.8": "0.25.0",
-        "2.7": "0.23.1"
+        "2.7": "0.24.0"
     }
     return f"RUN pip install --no-deps tensorflow-io=={version_matrix.get(major_version, '0.29.0')}"
 
