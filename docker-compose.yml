@@ -32,7 +32,7 @@ services:
       - /tmp/tf_aarch64/volumes/builds:/app/builds
       - /tmp/tf_aarch64/volumes/logs:/app/logs
       - /tmp/tf_aarch64/volumes/data:/app/data
-      - ./templates:/templates
+      - ./build_templates:/build_templates
 
   bazel_cache:
     image: diyor28/bazel-remote

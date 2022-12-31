@@ -5,9 +5,9 @@ import typing
 
 CLI_MODE = os.getenv("CLI", False)
 if CLI_MODE:
-    TEMPLATES_DIR = "./templates"
+    TEMPLATES_DIR = "./build_templates"
 else:
-    TEMPLATES_DIR = "../templates"
+    TEMPLATES_DIR = "../build_templates"
 
 
 def build_command(pkg_type: str, pkg_ver: str, df_path: str, py_ver: typing.Optional[str] = None, use_cache=True) -> tuple[str, str]:
@@ -53,6 +53,18 @@ def tf_protobuf_command(version: str) -> str:
     return ""
 
 
+def tf_io_command(version: str) -> str:
+    major_version = get_major_version(version)
+    version_matrix = {
+        "2.11": "0.29.0",
+        "2.10": "0.27.0",
+        "2.9": "0.26.0",
+        "2.8": "0.25.0",
+        "2.7": "0.23.1"
+    }
+    return f"RUN pip install --no-deps tensorflow-io=={version_matrix.get(major_version, '0.29.0')}"
+
+
 def tf_bazel_version(version: str) -> str:
     major_version = get_major_version(version)
     if major_version == "2.7":
@@ -73,10 +85,12 @@ def tf_dockerfile(py_version: str, tf_version: str):
     numpy_version = tf_numpy_version(py_version)
     git_command = gen_git_command(tf_version)
     protobuf_command = tf_protobuf_command(tf_version)
+    tensorflow_io_command = tf_io_command(tf_version)
 
     template_string = load_template("tensorflow")
     return template_string.format(git_command=git_command, py_version=py_version, bazel_version=bazel_version,
-                                  numpy_version=numpy_version, protobuf_command=protobuf_command)
+                                  numpy_version=numpy_version, protobuf_command=protobuf_command,
+                                  tensorflow_io_command=tensorflow_io_command)
 
 
 def tfx_bazel_version(tfx_version: str):

@@ -64,13 +64,13 @@ at the [build matrix](https://www.tensorflow.org/install/source#tested_build_con
 Then generate and build that dockerfile for that bazel version using:
 ```shell
 python gen.py bazel -v 3.7 ./Dockerfile_bazel
-docker build -t bazel:3.7 -f Dockerfile_bazel ./templates/context
+docker build -t bazel:3.7 -f Dockerfile_bazel ./build_templates/context
 ```
 
 Now generate a dockerfile and build the actual image (tensorflow in this case)
 ```shell
 python gen.py tensorflow -v 2.7.3 -py 3.7 ./Dockerfile_tf
-docker build -t tensorflow_py37:2.7.3 -f ./Dockerfile_tf ./templates/context/
+docker build -t tensorflow_py37:2.7.3 -f ./Dockerfile_tf ./build_templates/context/
 ```
 
 Copy wheels from the resulting image to host machine using:

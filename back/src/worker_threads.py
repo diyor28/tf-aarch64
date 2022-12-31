@@ -99,7 +99,7 @@ class BuildScheduler(BaseThread):
                 time.sleep(5)
                 continue
             print(f"Job found. Python: {build.python}, Package: {build.type}, Version: {build.package}")
-            build.status = Build.Status.BUILDING
+            build.update_status(Build.Status.BUILDING)
             session.add(build)
             session.commit()
             self.lock.release()
@@ -145,6 +145,6 @@ class BuildScheduler(BaseThread):
                 self.lock.release()
                 time.sleep(3)
 
-            build.status = builder.status
+            build.update_status(builder.status)
             session.add(build)
             session.commit()

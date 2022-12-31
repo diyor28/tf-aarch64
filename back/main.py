@@ -153,7 +153,7 @@ async def cancel_build(filename: str):
     if not build:
         raise HTTPException(status_code=404, detail=f"No build for filename {filename} found")
 
-    build.status = Build.Status.CANCELLED
+    build.update_status(Build.Status.CANCELLED)
     session.add(build)
     session.commit()
     return {"ok": True}
@@ -166,7 +166,7 @@ async def rebuild(conf: BuildBody, filename: str):
     if not build:
         build = Build(python=conf.python, package=conf.package, type=conf.type)
     else:
-        build.status = build.Status.PENDING
+        build.update_status(build.Status.PENDING)
 
     try:
         session.add(build)

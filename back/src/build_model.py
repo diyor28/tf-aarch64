@@ -1,3 +1,5 @@
+import datetime
+
 from sqlalchemy import Column, DateTime, String, func, create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
@@ -41,8 +43,14 @@ class Build(Base):
     file = Column(String, nullable=True)
     status = Column(String, default=Status.PENDING)
     type = Column(String, default=Type.TENSORFLOW)
+    # finished_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, server_default=func.now())
     update_at = Column(DateTime, onupdate=func.now())
+
+    def update_status(self, status: str):
+        self.status = status
+        # if status in [Build.Status.CANCELLED, Build.Status.COMPLETED, Build.Status.FAILED]:
+        #     self.finished_at = datetime.datetime.utcnow()
 
     def __repr__(self):
         return "<Build(python='%s', package='%s', type='%s', status='%s')>" % (
