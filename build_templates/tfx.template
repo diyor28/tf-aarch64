@@ -16,5 +16,6 @@ WORKDIR /data-validation
 RUN {tfdv_git_command}
 {use_cache_command}
 {copy_workspace_command}
+COPY tfx/replace_commits.sh ./
 RUN chmod +x replace_commits.sh && ./replace_commits.sh
 RUN python setup.py bdist_wheel && cp dist/*.whl /wheels
