@@ -6,7 +6,7 @@ from typing import TextIO
 
 from .build_model import Session, Build
 from .conf import BUILDER_THREADS
-from .generate import tf_bazel_version, tfx_bazel_version, generate, build_command
+from .generate import generate, build_command
 
 
 def create_builders():

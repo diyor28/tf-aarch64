@@ -15,11 +15,13 @@
                     </div>
                 </div>
                 <div class="ml-4" style="display: inline-flex">
-                    <x-icon v-if="['failed', 'cancelled'].includes(props.build.status)" class="icon-md"
+                    <x-icon v-if="['failed', 'cancelled'].includes(status)" class="icon-md"
                             style="color: rgb(255,29,29)"></x-icon>
-                    <check-icon v-else-if="props.build.status === 'completed'" class="icon-md"
+                    <check-icon v-else-if="status === 'completed'" class="icon-md"
                                 style="color: rgb(44,255,29)"></check-icon>
-                    <refresh-icon v-else class="spin-animation icon-md"></refresh-icon>
+                    <refresh-icon v-else-if="status === 'pending'"
+                                  class="spin-animation icon-md"></refresh-icon>
+                    <settings-icon class="spin-animation icon-md" v-else></settings-icon>
                 </div>
             </div>
             <div>
@@ -39,16 +41,23 @@
                 </div>
             </div>
         </div>
-        <div v-if="logs.length && selected" class="build-log mt-4">
-            <div v-for="log in logs" class="log-line">
-                <span class="line-number">{{ log.line_number }}</span>
-                <span class="ml-4" v-html="log.line"></span>
+        <template v-if="selected">
+            <div class="build-log mt-4">
+                <template v-if="logs.length">
+                    <div v-for="log in logs" class="log-line">
+                        <span class="line-number">{{ log.line_number }}</span>
+                        <span class="ml-4" v-html="log.line"></span>
+                    </div>
+                </template>
+                <div class="flex items-center justify-center" v-else>
+                    <div class="log-line">No logs yet...</div>
+                </div>
             </div>
-        </div>
-        <div class="flex mt-4 mb-2">
-            <div class="flex-auto"></div>
-            <a :href="`/logs/${props.build.id}.txt`">Full log file</a>
-        </div>
+            <div class="flex mt-4 mb-2">
+                <div class="flex-auto"></div>
+                <a :href="`/logs/${props.build.id}.txt`" target="_blank">Full log file</a>
+            </div>
+        </template>
     </div>
 </template>
 
@@ -65,6 +74,7 @@ import PythonIcon from "@/components/Icons/Python.vue";
 import TrashIcon from "@/components/Icons/Trash.vue";
 import RefreshIcon from "@/components/Icons/Refresh.vue";
 import TensorflowIcon from "@/components/Icons/Tensorflow.vue";
+import SettingsIcon from "@/components/Icons/Settings.vue";
 
 interface LogLine {
     line_number: number
@@ -79,6 +89,10 @@ const logs = computed((): LogLine[] => {
     });
 });
 const buildsStore = useBuildsStore();
+
+const status = computed(() => props.build.status);
+
+// const status = computed(() => 'building');
 
 async function cancel() {
     try {
