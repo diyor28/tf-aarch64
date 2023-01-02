@@ -58,22 +58,18 @@ npm run serve
 Coming soon
 
 ## Building wheels manually
-First build bazel image that your version of tensorflow/tfdv depends on, you can figure this out by looking 
-at the [build matrix](https://www.tensorflow.org/install/source#tested_build_configurations).
 
-Then generate and build that dockerfile for that bazel version using:
-```shell
-python gen.py bazel -v 3.7 ./Dockerfile_bazel
-docker build -t bazel:3.7 -f Dockerfile_bazel ./build_templates/context
-```
-
-Now generate a dockerfile and build the actual image (tensorflow in this case)
+Generate the dockerfile with build instructions (tensorflow in this case)
 ```shell
 python gen.py tensorflow -v 2.7.3 -py 3.7 ./Dockerfile_tf
-docker build -t tensorflow_py37:2.7.3 -f ./Dockerfile_tf ./build_templates/context/
+```
+
+Now build the actual image
+```shell
+docker build -t tensorflow:2.7.3-py3.7 -f ./Dockerfile_tf ./build_templates/context/
 ```
 
 Copy wheels from the resulting image to host machine using:
 ```shell
-docker run -v /host/machine/path:/builds tensorflow_py37:2.7.3 cp -a /wheels/. /builds
+docker run -v /host/machine/path:/builds tensorflow:2.7.3-py3.7 cp -a /wheels/. /builds
 ```
