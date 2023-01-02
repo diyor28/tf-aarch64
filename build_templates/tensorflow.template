@@ -1,0 +1,32 @@
+# https://www.tensorflow.org/install/source#tested_build_configurations
+FROM python:{py_version} as tf-build
+COPY --from=diyor28/bazel:{bazel_version} /usr/local/bin/bazel /usr/local/bin
+RUN DEBIAN_FRONTEND=noninteractive && apt-get -y update && apt-get -y install git openjdk-11-jdk
+RUN git clone https://github.com/tensorflow/tensorflow
+WORKDIR /tensorflow
+RUN {git_command}
+
+ENV PYTHONUNBUFFERED=1
+RUN pip install -U pip
+RUN pip install -U six wheel '{numpy_version}' requests setuptools mock 'future>=0.17.1' packaging && pip install -U keras_applications keras_preprocessing --no-deps
+ENV TF_NEED_CUDA=0 \
+TF_NEED_TENSORRT=0 \
+PYTHON_BIN_PATH="/usr/local/bin/python" \
+USE_DEFAULT_PYTHON_LIB_PATH=1 \
+TF_NEED_ROCM=0 \
+CC_OPT_FLAGS="-Wno-sign-compare" \
+TF_DOWNLOAD_CLANG=0 \
+TF_SET_ANDROID_WORKSPACE=0
+{use_cache_command}
+RUN ./configure && bazel build --config=opt -c opt //tensorflow/tools/pip_package:build_pip_package
+RUN ./bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_pkg
+
+FROM python:{py_version} as tf-install
+COPY --from=tf-build /tmp/tensorflow_pkg/*.whl wheels/
+RUN pip install /wheels/tensorflow-*.whl
+{protobuf_command}
+{tensorflow_io_command}
+RUN curl https://raw.githubusercontent.com/keras-team/keras-io/master/examples/vision/mnist_convnet.py > test.py
+RUN python test.py
+
+CMD ["python"]

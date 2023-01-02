@@ -1,0 +1,26 @@
+FROM python:{py_version} as tfx-build
+COPY --from=diyor28/bazel:{bazel_version} /usr/local/bin/bazel /usr/local/bin
+RUN DEBIAN_FRONTEND=noninteractive && apt-get -y update && apt-get -y install git openjdk-11-jdk
+RUN pip install numpy && mkdir /wheels && git clone https://github.com/tensorflow/tfx-bsl.git
+WORKDIR /tfx-bsl
+RUN {tfx_bsl_git_command}
+COPY tfx/replace_commits.sh ./
+{copy_arrow_command}
+{use_cache_command}
+RUN chmod +x replace_commits.sh && ./replace_commits.sh
+RUN python setup.py bdist_wheel && cp dist/*.whl /wheels
+
+WORKDIR /
+RUN git clone https://github.com/tensorflow/data-validation.git
+WORKDIR /data-validation
+RUN {tfdv_git_command}
+{use_cache_command}
+{copy_workspace_command}
+COPY tfx/replace_commits.sh ./
+RUN chmod +x replace_commits.sh && ./replace_commits.sh
+RUN python setup.py bdist_wheel && cp dist/*.whl /wheels
+
+FROM python:{py_version} as tfx-install
+COPY --from=tfx-build /wheels/*.whl wheels/
+# Install command
+CMD ["python"]

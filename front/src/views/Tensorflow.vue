@@ -1,6 +1,8 @@
 <template>
     <div>
-        <build-card v-for="build in buildsStore.tf" :build="build"></build-card>
+        <build-card v-for="(build, idx) in buildsStore.tf" :build="build" @click="selected=build.id"
+                    :selected="selected === build.id || !selected && idx === 0">
+        </build-card>
         <div class="flex mt-4">
             <div>
                 <label class="label">Python</label>
@@ -26,6 +28,7 @@ import {useBuildsStore} from "@/stores/builds";
 import {useVersionsStore} from "@/stores/versions";
 import {sortVersions} from "@/components/sortVersions";
 
+const selected = ref('');
 const buildBody = ref({python: '', package: '', type: 'tensorflow'});
 const buildsStore = useBuildsStore();
 const versionsStore = useVersionsStore();
@@ -39,7 +42,7 @@ const tfVersions = computed(() => {
 async function build() {
     try {
         await buildsStore.create(buildBody.value);
-    } catch (e) {
+    } catch (e){
         if (e.status === 400) {
             alert(e.body.detail);
         }

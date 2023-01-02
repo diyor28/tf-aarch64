@@ -1,16 +1,20 @@
 <template>
-    <build-card v-for="build in buildsStore.tfx" :build="build"></build-card>
-    <div class="flex mt-4">
-        <div>
-            <label class="label">Python</label>
-            <version-select v-model="buildBody.python" :versions="pyVersions"></version-select>
-        </div>
-        <div class="flex-auto ml-4">
-            <label class="label">Tfx</label>
-            <version-select v-model="buildBody.package" :versions="tfxVersions"></version-select>
-        </div>
-        <div>
-            <button class="btn btn-success" @click="build()">Build</button>
+    <div>
+        <build-card v-for="(build, idx) in buildsStore.tfx" :build="build" @click="selected = build.id"
+                    :selected="selected === build.id || !selected && idx === 0">
+        </build-card>
+        <div class="flex mt-4">
+            <div>
+                <label class="label">Python</label>
+                <version-select v-model="buildBody.python" :versions="pyVersions"></version-select>
+            </div>
+            <div class="flex-auto ml-4">
+                <label class="label">Tfx</label>
+                <version-select v-model="buildBody.package" :versions="tfxVersions"></version-select>
+            </div>
+            <div>
+                <button class="btn btn-success" @click="build()">Build</button>
+            </div>
         </div>
     </div>
 </template>
@@ -24,6 +28,7 @@ import {useBuildsStore} from "@/stores/builds";
 import {useVersionsStore} from "@/stores/versions";
 import {sortVersions} from "@/components/sortVersions";
 
+const selected = ref('');
 const buildBody = ref({python: '', package: '', type: 'tfx'});
 const buildsStore = useBuildsStore();
 const versionsStore = useVersionsStore();
@@ -37,7 +42,7 @@ const tfxVersions = computed(() => {
 async function build() {
     try {
         await buildsStore.create(buildBody.value);
-    } catch (e) {
+    } catch (e){
         if (e.status === 400) {
             alert(e.body.detail);
         }

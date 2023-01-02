@@ -55,22 +55,22 @@ npm run serve
 ```
 
 ## Adding and building custom versions
-To add a new tensorflow build configuration create a Dockerfile named `Dockerfile_tf27(0,1,2,3,4)` in the `tensorflow/` directory.
-Where `tf` stands for `tensorflow` and `27` the major release `v2.7`.
-`(0,1,2,3,4)` represents available patch versions. 
-Then copy the contents of an existing build configuration and modify accordingly to your needs.
-The webserver will scan the directory and in the UI you should see a new build configuration available.
+Coming soon
 
 ## Building wheels manually
-First build bazel image that your version of tensorflow/tfdv depends on, you can figure this out by looking at your
-respective Dockerfile or [here](https://www.tensorflow.org/install/source#tested_build_configurations).
+First build bazel image that your version of tensorflow/tfdv depends on, you can figure this out by looking 
+at the [build matrix](https://www.tensorflow.org/install/source#tested_build_configurations).
+
+Then generate and build that dockerfile for that bazel version using:
 ```shell
-docker build -t bazel:3.7 -f ./bazel/Dockerfile_bazel37 ./bazel/
+python gen.py bazel -v 3.7 ./Dockerfile_bazel
+docker build -t bazel:3.7 -f Dockerfile_bazel ./build_templates/context
 ```
 
-And then build the actual image (tensorflow in this case)
+Now generate a dockerfile and build the actual image (tensorflow in this case)
 ```shell
-docker build -t tensorflow_py37:2.7.3 -f ./tensorflow/Dockerfile_tf27\(0,1,2,3,4\) --build-arg PYTHON_VERSION=3.7 --build-arg MINOR_VERSION=3 ./tensorflow/
+python gen.py tensorflow -v 2.7.3 -py 3.7 ./Dockerfile_tf
+docker build -t tensorflow_py37:2.7.3 -f ./Dockerfile_tf ./build_templates/context/
 ```
 
 Copy wheels from the resulting image to host machine using:

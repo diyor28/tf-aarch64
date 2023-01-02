@@ -31,7 +31,8 @@ setInterval(() => {
 .card {
     border: solid #c4c4c4 1px;
     border-radius: 8px;
-    padding: 10px;
+    padding: 14px;
+    cursor: pointer;
 }
 
 .nav {

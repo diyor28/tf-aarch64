@@ -23,8 +23,7 @@ services:
 
   back:
     environment:
-      - WHEELS_DIR=/app/builds
-      - BUILDER_THREADS=6
+      - BUILDER_THREADS
     restart: always
     build:
       context: ./back
@@ -33,6 +32,19 @@ services:
       - /tmp/tf_aarch64/volumes/builds:/app/builds
       - /tmp/tf_aarch64/volumes/logs:/app/logs
       - /tmp/tf_aarch64/volumes/data:/app/data
-      - ./tensorflow:/tensorflow
-      - ./tfx:/tfx
-      - ./bazel:/bazel
+      - ./build_templates:/build_templates
+
+  bazel_cache:
+    image: diyor28/bazel-remote
+    container_name: bazel-cache
+    volumes:
+      - /tmp/tf_aarch64/volumes/bazel-cache:/data
+    ports:
+      - 9090:8080
+      - 9092:9092
+    networks:
+      - bazel-cache
+
+networks:
+  bazel-cache:
+    name: bazel-cache

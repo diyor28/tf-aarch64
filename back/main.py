@@ -7,9 +7,8 @@ from pydantic.main import BaseModel
 from sqlalchemy.exc import IntegrityError
 
 from src.build_model import Session, Build
-from src.utils import wheels_list, list_versions
+from src.utils import wheels_list
 from src.worker_threads import create_builders, get_logs
-from src.conf import TF_DF_REGEX, TFX_DF_REGEX
 
 
 class BuildBody(BaseModel):
@@ -20,6 +19,9 @@ class BuildBody(BaseModel):
 
 if not os.path.exists('./logs'):
     os.mkdir('./logs')
+
+if not os.path.exists('./build_files'):
+    os.mkdir('./build_files')
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -58,8 +60,48 @@ def read_wheels(request: Request):
 
 @app.get("/api/versions")
 def get_versions():
-    tf_versions = list_versions("../tensorflow/Dockerfile*", TF_DF_REGEX)
-    tfx_versions = list_versions("../tfx/Dockerfile*", TFX_DF_REGEX)
+    tf_versions = [
+        "2.7.0",
+        "2.7.1",
+        "2.7.2",
+        "2.7.3",
+        "2.7.4",
+        "2.7.x",
+        "2.8.0",
+        "2.8.1",
+        "2.8.2",
+        "2.8.3",
+        "2.8.4",
+        "2.8.x",
+        "2.9.0",
+        "2.9.1",
+        "2.9.2",
+        "2.9.3",
+        "2.9.x",
+        "2.10.0",
+        "2.10.1",
+        "2.10.x"
+    ]
+    tfx_versions = [
+        "1.4.0",
+        "1.4.x",
+        "1.5.0",
+        "1.5.x",
+        "1.6.0",
+        "1.6.x",
+        "1.7.0",
+        "1.7.x",
+        "1.8.0",
+        "1.8.x",
+        "1.9.0",
+        "1.9.x",
+        "1.10.0",
+        "1.10.x",
+        "1.11.0",
+        "1.11.x",
+        "1.12.0",
+        "1.12.x"
+    ]
 
     return {"tensorflow": tf_versions, "tfx": tfx_versions}
 
@@ -67,7 +109,7 @@ def get_versions():
 @app.get("/api/builds")
 def get_builds(t: str = ''):
     session = Session()
-    query_list = session.query(Build)
+    query_list = session.query(Build).order_by(Build.update_at.desc())
     if t:
         query_list = query_list.filter(Build.type == t)
     result = []
@@ -111,7 +153,7 @@ async def cancel_build(filename: str):
     if not build:
         raise HTTPException(status_code=404, detail=f"No build for filename {filename} found")
 
-    build.status = Build.Status.CANCELLED
+    build.update_status(Build.Status.CANCELLED)
     session.add(build)
     session.commit()
     return {"ok": True}
@@ -124,7 +166,7 @@ async def rebuild(conf: BuildBody, filename: str):
     if not build:
         build = Build(python=conf.python, package=conf.package, type=conf.type)
     else:
-        build.status = build.Status.PENDING
+        build.update_status(build.Status.PENDING)
 
     try:
         session.add(build)

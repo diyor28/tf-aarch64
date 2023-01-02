@@ -1,7 +1,7 @@
+import datetime
+
 from sqlalchemy import Column, DateTime, String, func, create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
-
-from .utils import dotted2flat
 
 Base = declarative_base()
 
@@ -11,11 +11,11 @@ Session = sessionmaker(bind=eng)
 
 
 def get_filename(py_version: str, pkg_version: str, pkg_type: str):
-    tf_combined = dotted2flat(pkg_version)
-    py_combined = dotted2flat(py_version)
+    pkg_combined = "".join(pkg_version.split("."))
+    py_combined = "".join(py_version.split("."))
     if pkg_type == Build.Type.TFX:
-        return f"tfx{tf_combined}_py{py_combined}"
-    return f"tf{tf_combined}_py{py_combined}"
+        return f"tfx{pkg_combined}_py{py_combined}"
+    return f"tf{pkg_combined}_py{py_combined}"
 
 
 def default_id(context):
@@ -43,8 +43,14 @@ class Build(Base):
     file = Column(String, nullable=True)
     status = Column(String, default=Status.PENDING)
     type = Column(String, default=Type.TENSORFLOW)
+    # finished_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, server_default=func.now())
     update_at = Column(DateTime, onupdate=func.now())
+
+    def update_status(self, status: str):
+        self.status = status
+        # if status in [Build.Status.CANCELLED, Build.Status.COMPLETED, Build.Status.FAILED]:
+        #     self.finished_at = datetime.datetime.utcnow()
 
     def __repr__(self):
         return "<Build(python='%s', package='%s', type='%s', status='%s')>" % (

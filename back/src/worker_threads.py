@@ -1,15 +1,12 @@
 import os
-import re
 import subprocess
 import threading
 import time
 from typing import TextIO
 
 from .build_model import Session, Build
-from .conf import BUILDER_THREADS, TF_DF_REGEX, TFX_DF_REGEX
-from .utils import flat2dotted, scan_dockerfiles
-
-log_files = {}
+from .conf import BUILDER_THREADS
+from .generate import generate, build_command
 
 
 def create_builders():
@@ -27,14 +24,12 @@ def get_logs(pk: str, n_lines: int = 15):
     filename = f"./logs/{pk}.txt"
     if not os.path.exists(filename):
         return []
-    file = log_files.get(pk, open(filename, "r"))
-    if not file:
-        return []
-    file.seek(0, 0)
-    lines = file.readlines()
-    for idx, line in enumerate(lines[-1 * n_lines:]):
-        logs.append({"line_number": len(lines) + 5 + idx, "line": line.strip()})
-    return logs
+    with open(filename, "r", errors='ignore') as file:
+        file.seek(0, 0)
+        lines = file.readlines()
+        for idx, line in enumerate(lines[-1 * n_lines:]):
+            logs.append({"line_number": len(lines) + 5 + idx, "line": line.strip()})
+        return logs
 
 
 class BaseThread(threading.Thread):
@@ -104,38 +99,23 @@ class BuildScheduler(BaseThread):
                 time.sleep(5)
                 continue
             print(f"Job found. Python: {build.python}, Package: {build.type}, Version: {build.package}")
-            build.status = Build.Status.BUILDING
+            build.update_status(Build.Status.BUILDING)
             session.add(build)
             session.commit()
             self.lock.release()
 
-            py_ver = build.python
-            pkg_ver_split = build.package.split(".")
-            pkg_minor_ver = pkg_ver_split[-1]
-            pkg_major_ver = ".".join(pkg_ver_split[:-1])
-            pkg_ver = ".".join(pkg_ver_split[:-1]) if pkg_minor_ver == "x" else build.package
-            py_combined = ''.join(build.python.split('.'))
-            build_args = ["--build-arg", f"PYTHON_VERSION={py_ver}", "--build-arg", f"MINOR_VERSION={pkg_minor_ver}"]
-            log_file = open(f"./logs/{build.id}.txt", "w+")
-
-            log_files[build.id] = log_file
+            log_file = open(f"./logs/{build.id}.txt", "w+", errors='ignore')
 
             commands = []
 
-            for bazel_df in os.listdir("../bazel"):
-                bazel_ver = re.findall(r"bazel(\d\d)", bazel_df)[0]
-                commands.append(["docker", "build", "-t", f"bazel:{flat2dotted(bazel_ver)}", "-f", f"../bazel/{bazel_df}", "../bazel/"])
-
             if build.type == Build.Type.TENSORFLOW:
-                dfs_map = scan_dockerfiles("../tensorflow/Dockerfile*", TF_DF_REGEX)
-                image_name = f"tensorflow_py{py_combined}:{pkg_ver}"
-                docker_file = dfs_map[pkg_major_ver]["df"]
-                commands.append(["docker", "build", "-t", image_name, "-f", docker_file, *build_args, "../tensorflow/"])
+                docker_file = generate("tensorflow", build.package, build.python, use_cache=True)
+                build_cmd, image_name = build_command("tensorflow", build.package, f"./build_files/{docker_file}", build.python, use_cache=True)
+                commands.append(build_cmd.split(" "))
             else:
-                dfs_map = scan_dockerfiles("../tfx/Dockerfile*", TFX_DF_REGEX)
-                image_name = f"tfx_py{py_combined}:{pkg_ver}"
-                docker_file = dfs_map[pkg_major_ver]["df"]
-                commands.append(["docker", "build", "-t", image_name, "-f", docker_file, *build_args, "../tfx/"])
+                docker_file = generate("tfx", build.package, build.python, use_cache=True)
+                build_cmd, image_name = build_command("tfx", build.package, f"./build_files/{docker_file}", build.python, use_cache=True)
+                commands.append(build_cmd.split(" "))
 
             # command to copy produced wheels to host
             commands.append(["docker", "run", "-v", "/tmp/tf_aarch64/volumes/builds:/builds", image_name, "cp", "-a", "/wheels/.", "/builds"])
@@ -156,7 +136,6 @@ class BuildScheduler(BaseThread):
                 self.lock.release()
                 time.sleep(3)
 
-            build.status = builder.status
-            log_files.pop(build.id)
+            build.update_status(builder.status)
             session.add(build)
             session.commit()

@@ -1,9 +1,10 @@
 basic_auth/.htpasswd
 
 .idea
-back/venv
+venv
 back/data
 back/logs
+back/build_files
 back/.idea
 
 __pycache__
