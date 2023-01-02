@@ -81,8 +81,8 @@ docker run -v /host/machine/path:/builds tensorflow:2.7.3-py3.7 cp -a /wheels/. 
 
 ## Supported versions
 
-Python: 3.7, 3.8, 3.9, 3.10, 3.11
-Tensorflow: 2.7, 2.8, 2.9, 2.10
+Python: 3.7, 3.8, 3.9, 3.10, 3.11  
+Tensorflow: 2.7, 2.8, 2.9, 2.10  
 Tensorflow data validation: 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 1.10, 1.12
 
 NOTE: Other versions can be built and uploaded upon request.
