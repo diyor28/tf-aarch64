@@ -4,6 +4,11 @@ Docs are not complete at the moment. Things to include:
     How build instructions change from one file to another
     Configuration options
 
+## Installation
+```shell
+pip install tensorflow==2.8.3 -f https://diyor28.github.io/wheels
+```
+
 ## Setup
 
 ### Make htpasswd for basic auth
