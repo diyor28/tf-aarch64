@@ -5,7 +5,7 @@ import time
 from typing import TextIO
 
 from .build_model import Session, Build
-from .conf import BUILDER_THREADS
+from .conf import BUILDER_THREADS, USE_CACHE
 from .generate import generate, build_command
 
 
@@ -109,12 +109,12 @@ class BuildScheduler(BaseThread):
             commands = []
 
             if build.type == Build.Type.TENSORFLOW:
-                docker_file = generate("tensorflow", build.package, build.python, use_cache=True)
-                build_cmd, image_name = build_command("tensorflow", build.package, f"./build_files/{docker_file}", build.python, use_cache=True)
+                docker_file = generate("tensorflow", build.package, build.python, use_cache=USE_CACHE)
+                build_cmd, image_name = build_command("tensorflow", build.package, f"./build_files/{docker_file}", build.python, use_cache=USE_CACHE)
                 commands.append(build_cmd.split(" "))
             else:
-                docker_file = generate("tfx", build.package, build.python, use_cache=True)
-                build_cmd, image_name = build_command("tfx", build.package, f"./build_files/{docker_file}", build.python, use_cache=True)
+                docker_file = generate("tfx", build.package, build.python, use_cache=USE_CACHE)
+                build_cmd, image_name = build_command("tfx", build.package, f"./build_files/{docker_file}", build.python, use_cache=USE_CACHE)
                 commands.append(build_cmd.split(" "))
 
             # command to copy produced wheels to host

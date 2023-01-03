@@ -24,6 +24,7 @@ services:
   back:
     environment:
       - BUILDER_THREADS
+      - USE_CACHE
     restart: always
     build:
       context: ./back
