@@ -5,8 +5,8 @@ pip install tensorflow==2.8.3 -f https://diyor28.github.io/wheels
 ```
 ### Supported versions:
 Python: 3.7, 3.8, 3.9, 3.10, 3.11  
-Tensorflow: 2.7, 2.8, 2.9, 2.10  
-Tensorflow data validation: 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 1.10, 1.12
+Tensorflow: 2.7, 2.8, 2.9, 2.10, 2.11, 2.12
+Tensorflow data validation: 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 1.10, 1.12, 1.13
 
 NOTE: Other versions can be built and uploaded upon request.
 

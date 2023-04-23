@@ -1,7 +1,7 @@
 FROM python:{py_version} as tfx-build
 COPY --from=diyor28/bazel:{bazel_version} /usr/local/bin/bazel /usr/local/bin
 RUN DEBIAN_FRONTEND=noninteractive && apt-get -y update && apt-get -y install git openjdk-11-jdk
-RUN pip install numpy && mkdir /wheels && git clone https://github.com/tensorflow/tfx-bsl.git
+RUN pip install '{numpy_version}' && mkdir /wheels && git clone https://github.com/tensorflow/tfx-bsl.git
 WORKDIR /tfx-bsl
 RUN {tfx_bsl_git_command}
 COPY tfx/replace_commits.sh ./

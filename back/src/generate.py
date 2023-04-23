@@ -107,15 +107,36 @@ def tf_dockerfile(py_version: str, tf_version: str, use_cache=False):
 
 
 def tfx_bazel_version(tfx_version: str):
-    return "4.2.3"
+    old_tfx_versions = [
+        "1.4.0",
+        "1.4.x",
+        "1.5.0",
+        "1.5.x",
+        "1.6.0",
+        "1.6.x",
+        "1.7.0",
+        "1.7.x",
+        "1.8.0",
+        "1.8.x",
+        "1.9.0",
+        "1.9.x",
+        "1.10.0",
+        "1.10.x",
+        "1.11.0",
+        "1.11.x",
+        "1.12.0",
+        "1.12.x",
+    ]
+    return "4.2.3" if tfx_version in old_tfx_versions else "5.3.2"
 
 
 def tfx_dockerfile(py_version: str, tfx_version: str, use_cache=False):
     major_version = get_major_version(tfx_version)
     bazel_version = tfx_bazel_version(tfx_version)
+    numpy_version = tf_numpy_version(py_version)
     git_command = tfx_git_command(tfx_version)
     copy_arrow_command = ""
-    if major_version in ["1.10", "1.11", "1.12"]:
+    if major_version in ["1.10", "1.11", "1.12", "1.13"]:
         copy_arrow_command = "COPY tfx/arrow.BUILD ./third_party"
     copy_workspace_command = ""
     if major_version in ["1.4", "1.5", "1.6", "1.7"]:
@@ -123,7 +144,7 @@ def tfx_dockerfile(py_version: str, tfx_version: str, use_cache=False):
     use_cache_command = tf_use_cache_command(use_cache)
 
     template_string = load_template("tfx")
-    return template_string.format(py_version=py_version, bazel_version=bazel_version,
+    return template_string.format(py_version=py_version, bazel_version=bazel_version, numpy_version=numpy_version,
                                   tfdv_git_command=git_command,
                                   tfx_bsl_git_command=git_command,
                                   copy_arrow_command=copy_arrow_command, copy_workspace_command=copy_workspace_command,
