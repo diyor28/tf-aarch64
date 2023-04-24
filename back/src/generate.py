@@ -4,10 +4,7 @@ import os
 import typing
 
 CLI_MODE = os.getenv("CLI", False)
-if CLI_MODE:
-    TEMPLATES_DIR = "./build_templates"
-else:
-    TEMPLATES_DIR = "../build_templates"
+TEMPLATES_DIR = "./build_templates" if CLI_MODE else "../build_templates"
 
 
 def build_command(pkg_type: str, pkg_ver: str, df_path: str, py_ver: typing.Optional[str] = None, use_cache=True) -> tuple[str, str]:
@@ -136,11 +133,6 @@ def bazel_dockerfile(bazel_version: str):
     return template_string.format(bazel_version=bazel_version)
 
 
-def write_to_file(instructions: str, path: str):
-    with open(path, 'w') as f:
-        f.write(instructions)
-
-
 def generate(pkg_type: str, pkg_ver: str, py_ver: typing.Optional[str] = None, **kwargs) -> str:
     pkg_ver_flat = "".join(pkg_ver.split("."))
     py_ver_flat = "".join(py_ver.split(".")) if py_ver else ""
@@ -157,5 +149,6 @@ def generate(pkg_type: str, pkg_ver: str, py_ver: typing.Optional[str] = None, *
     else:
         raise ValueError(f"Unknown package type {pkg_type}")
 
-    write_to_file(instructions, os.path.join("./build_files", df_name))
+    with open(os.path.join("./build_files", df_name), 'w') as f:
+        f.write(instructions)
     return df_name
