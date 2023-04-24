@@ -111,12 +111,9 @@ def tfx_dockerfile(py_version: str, tfx_version: str, use_cache=False):
     major_version = get_major_version(tfx_version)
     bazel_version = tfx_bazel_version(tfx_version)
     git_command = tfx_git_command(tfx_version)
-    copy_arrow_command = ""
-    if major_version in ["1.10", "1.11", "1.12"]:
-        copy_arrow_command = "COPY tfx/arrow.BUILD ./third_party"
-    copy_workspace_command = ""
-    if major_version in ["1.4", "1.5", "1.6", "1.7"]:
-        copy_workspace_command = "COPY tfx/WORKSPACE ./"
+    mv_int = int(major_version.split(".")[-1]) # "1.13" -> 13
+    copy_arrow_command = "COPY tfx/arrow.BUILD ./third_party" if mv_int >= 10 else ""
+    copy_workspace_command = "COPY tfx/WORKSPACE ./" if 1.4 <= mv_int <= 1.7 else ""
     use_cache_command = tf_use_cache_command(use_cache)
 
     template_string = load_template("tfx")
