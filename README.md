@@ -10,7 +10,7 @@ Tensorflow data validation: 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 1.10, 1.12, 1.13
 
 NOTE: Other versions can be built and uploaded upon request.
 
-You can also use prebuilt images from [dockerhub](https://hub.docker.com/repository/docker/diyor28/tensorflow)
+You can also use prebuilt images from [dockerhub](https://hub.docker.com/r/diyor28/tensorflow)
 ```dockerfile
 FROM diyor28/tensorflow:2.7.3-py37
 RUN python -c "import tensorflow; print(tensorflow.__version__)"
