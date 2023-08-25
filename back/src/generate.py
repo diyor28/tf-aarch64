@@ -135,6 +135,8 @@ def tfx_dockerfile(py_version: str, tfx_version: str, use_cache=False):
     copy_arrow_command = ""
     if major_version in ["1.10", "1.11", "1.12", "1.13"]:
         copy_arrow_command = "COPY tfx/arrow.BUILD ./third_party"
+    elif major_version == "1.14":
+        copy_arrow_command = "COPY tfx/arrow_new.BUILD ./third_party/arrow.BUILD"
     copy_workspace_command = ""
     if major_version in ["1.4", "1.5", "1.6", "1.7"]:
         copy_workspace_command = "COPY tfx/WORKSPACE ./"
