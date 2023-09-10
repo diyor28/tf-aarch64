@@ -7,7 +7,7 @@ CLI_MODE = os.getenv("CLI", False)
 TEMPLATES_DIR = "./build_templates" if CLI_MODE else "../build_templates"
 
 
-def build_command(pkg_type: str, pkg_ver: str, df_path: str, py_ver: typing.Optional[str] = None, use_cache=True) -> tuple[str, str]:
+def build_command(pkg_type: str, pkg_ver: str, df_path: str, py_ver: typing.Optional[str] = None, use_cache=True) -> typing.Tuple[str, str]:
     context_path = os.path.join(TEMPLATES_DIR, "context")
     extra_args = []
 
