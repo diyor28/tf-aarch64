@@ -6,9 +6,10 @@ pip install tensorflow==2.8.3 -f https://diyor28.github.io/wheels
 ### Supported versions:
 Python: 3.7, 3.8, 3.9, 3.10, 3.11  
 Tensorflow: 2.7, 2.8, 2.9, 2.10\
-Tensorflow data validation: 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 1.10, 1.12, 1.13
+Tensorflow data validation: 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 1.10, 1.12, 1.13, 1.14
 
 Tensorflow versions 2.11+ should already come with prebuilt wheels for aarch64.\
+TFDV 1.14 can be built manually, however, a prebuilt .whl is not uploaded at the moment.
 NOTE: Other versions can be built and uploaded upon request.
 
 You can also use prebuilt images from [dockerhub](https://hub.docker.com/r/diyor28/tensorflow)
