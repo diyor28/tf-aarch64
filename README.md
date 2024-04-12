@@ -1,99 +1,127 @@
-## Installation
+# Installation Guide
+
+## Quick Installation
+
+Install TensorFlow using our custom wheels for optimized performance on various architectures:
 
 ```shell
 pip install tensorflow==2.8.3 -f https://diyor28.github.io/wheels
 ```
-### Supported versions:
-Python: 3.7, 3.8, 3.9, 3.10, 3.11  
-Tensorflow: 2.7, 2.8, 2.9, 2.10\
-Tensorflow data validation: 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 1.10, 1.12, 1.13, 1.14
 
-Tensorflow versions 2.11+ should already come with prebuilt wheels for aarch64.\
-TFDV 1.14 can be built manually, however, a prebuilt .whl is not uploaded at the moment.\
-NOTE: Other versions can be built and uploaded upon request.
+## Supported Versions
 
-You can also use prebuilt images from [dockerhub](https://hub.docker.com/r/diyor28/tensorflow)
+Ensure compatibility with these supported versions before installation:
+
+- **Python:** 3.7, 3.8, 3.9, 3.10, 3.11
+- **TensorFlow:** 2.7, 2.8, 2.9, 2.10
+- **TensorFlow Data Validation (TFDV):** 1.4 to 1.14
+
+**Note:**
+- TensorFlow versions 2.11 and above provide prebuilt wheels for aarch64.
+- TFDV 1.14 can be manually built, but a prebuilt wheel is currently not available.
+- Custom builds for other versions can be requested.
+
+## Docker Images
+
+Use our prebuilt Docker images available on [Docker Hub](https://hub.docker.com/r/diyor28/tensorflow):
+
 ```dockerfile
 FROM diyor28/tensorflow:2.7.3-py37
 RUN python -c "import tensorflow; print(tensorflow.__version__)"
 ```
-All the images are based on official [python](https://hub.docker.com/_/python) docker images.
 
-TFDV images are coming soon
+All images are based on the official [Python Docker images](https://hub.docker.com/_/python).
 
-## Running webserver using docker
-### Make htpasswd for basic auth
+TFDV Docker images will be available soon.
+
+## Web Server Setup with Docker
+
+### Basic Authentication
+
+Create a directory and password for basic authentication:
 
 ```bash
-$ mkdir basic_auth
-$ htpasswd -c basic_auth/.htpasswd admin
+mkdir basic_auth
+htpasswd -c basic_auth/.htpasswd admin
 ```
 
-### Make directory for workbench
+### Workbench Directory
 
-We use `/tmp/tf_aarch64/` for workbench for this build tool.
+Set up a directory to serve as a workbench:
 
 ```bash
-$ mkdir /tmp/tf_aarch64
+mkdir /tmp/tf_aarch64
 ```
 
 ### Configuration
-If you would like to disable caching or do more than one build at a time
-```shell
-vim .env
-```
 
-```dotenv
-# do not set this higher than 2 if you have less then 32GB of RAM. Espeically for building tensorflow
-BUILDER_THREADS=1
-# disable if you are using buildkit or do not want caching in your builds
-USE_CACHE=True
-```
+Configure environment settings such as build concurrency and caching:
 
+1. Edit the environment settings:
 
-Now in the root of the project run:
-```shell
-docker compose up -d --build
-```
-Now visit http://localhost you should see the web interface
+   ```shell
+   vim .env
+   ```
 
-In the web UI there are two tabs: Tensorflow and TFX. 
-Each page has a version dropdown at the bottom of the page for selecting
-python version, the library version. 
-A version number that looks like `2.7.x` means that it will build the latest changes in the 2.7 branch.
+2. Update or add the following configurations:
 
-## Development setup
+   ```dotenv
+   BUILDER_THREADS=1  # Max of 2 for systems with <32GB RAM
+   USE_CACHE=True     # Disable if using BuildKit or if caching is not desired
+   ```
 
-Running python server
+3. Start the Docker container:
+
+   ```shell
+   docker compose up -d --build
+   ```
+
+Visit `http://localhost` to access the web interface, which includes version selection tools for TensorFlow and TFX.
+
+## Development Setup
+
+### Python Backend Server
+
 ```shell
 cd back/
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
 
-Running ui server
+### UI Server
+
 ```shell
 cd front/
-npm i
+npm install
 npm run serve
 ```
 
-## Adding and building custom versions
-Coming soon...
+## Manual Wheel Building
 
-## Building wheels manually
+### Generate Dockerfile
 
-Generate the dockerfile with build instructions (tensorflow in this case)
+Create a Dockerfile for building a specific TensorFlow version:
+
 ```shell
 python gen.py tensorflow -v 2.7.3 -py 3.7 ./Dockerfile_tf
 ```
 
-Now build the actual image
+### Build Docker Image
+
+Build the Docker image based on the generated Dockerfile:
+
 ```shell
 docker build -t tensorflow:2.7.3-py3.7 -f ./Dockerfile_tf ./build_templates/context/
 ```
 
-Copy wheels from the resulting image to host machine using:
+### Extract Wheels
+
+Copy the built TensorFlow wheels from the Docker container to your host machine:
+
 ```shell
 docker run -v /host/machine/path:/builds tensorflow:2.7.3-py3.7 cp -a /wheels/. /builds
 ```
+
+## Future Updates
+
+Details on adding and building custom versions will be provided soon.
